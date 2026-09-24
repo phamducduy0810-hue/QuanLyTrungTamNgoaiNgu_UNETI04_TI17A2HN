@@ -1,0 +1,122 @@
+@*
+    Họ và tên: Phạm Đức Duy
+    
+    Nội dung thực hiện: Module 2 - Giao diện Xem chi tiết lớp học (Details)
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.LopHoc
+
+@{
+    ViewData["Title"] = "Chi tiết Lớp học";
+    var vaiTro = Context.Session.GetString("VaiTro");
+    bool isAdmin = (vaiTro == "Admin");
+    int soLuongDangKy = Model.DangKyHocs?.Count(d => d.TrangThai == "Đã xác nhận") ?? 0;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-info text-dark py-3 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>CHI TIẾT LỚP HỌC: @Model.TenLop</h4>
+                    <span class="badge bg-dark text-white px-3 py-2">Mã lớp: #@Model.MaLop</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6 border-end">
+                            <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">Thông tin Khóa học & Lịch</h5>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5 text-muted">Khóa học:</dt>
+                                <dd class="col-sm-7 fw-bold text-primary">@(Model.KhoaHoc?.TenKhoaHoc ?? "Không xác định")</dd>
+
+                                <dt class="col-sm-5 text-muted">Ngoại ngữ:</dt>
+                                <dd class="col-sm-7">@(Model.KhoaHoc?.NgoaiNgu ?? "Không xác định")</dd>
+
+                                <dt class="col-sm-5 text-muted">Cấp độ:</dt>
+                                <dd class="col-sm-7">@(Model.KhoaHoc?.CapDo ?? "Không xác định")</dd>
+
+                                <dt class="col-sm-5 text-muted">Khai giảng:</dt>
+                                <dd class="col-sm-7 fw-bold">@Model.NgayKhaiGiang.ToString("dd/MM/yyyy")</dd>
+
+                                <dt class="col-sm-5 text-muted">Lịch học:</dt>
+                                <dd class="col-sm-7">@Model.LichHoc</dd>
+
+                                <dt class="col-sm-5 text-muted">Phòng học:</dt>
+                                <dd class="col-sm-7">@Model.PhongHoc</dd>
+                            </dl>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">Học phí & Sĩ số</h5>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5 text-muted">Học phí:</dt>
+                                <dd class="col-sm-7 text-danger fw-bold fs-5">@Model.HocPhi.ToString("N0") VNĐ</dd>
+
+                                <dt class="col-sm-5 text-muted">Trạng thái:</dt>
+                                <dd class="col-sm-7">
+                                    @switch (Model.TrangThai)
+                                    {
+                                        case "Đang tuyển sinh":
+                                            <span class="badge bg-success">Đang tuyển sinh</span>
+                                            break;
+                                        case "Sắp mở":
+                                            <span class="badge bg-warning text-dark">Sắp mở</span>
+                                            break;
+                                        case "Đang học":
+                                            <span class="badge bg-primary">Đang học</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">Đã kết thúc</span>
+                                            break;
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-5 text-muted">Số lượng tối đa:</dt>
+                                <dd class="col-sm-7">@Model.SoLuongToiDa học viên</dd>
+
+                                <dt class="col-sm-5 text-muted">Đã xác nhận:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="fw-bold text-success">@soLuongDangKy</span> / @Model.SoLuongToiDa học viên
+                                    <div class="progress mt-1" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: @((Model.SoLuongToiDa > 0) ? (soLuongDangKy * 100 / Model.SoLuongToiDa) : 0)%">
+                                        </div>
+                                    </div>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light p-3 d-flex justify-content-between align-items-center">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                    </a>
+                    <div>
+                        @if (isAdmin)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.MaLop" class="btn btn-warning px-3 me-2">
+                                <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.MaLop" class="btn btn-danger px-3">
+                                <i class="bi bi-trash"></i> Xóa
+                            </a>
+                        }
+                        else
+                        {
+                           
+                            @if (Model.TrangThai == "Đang tuyển sinh" && soLuongDangKy < Model.SoLuongToiDa)
+                            {
+                                <a asp-controller="DangKyHoc" asp-action="DangKy" asp-route-maLop="@Model.MaLop" class="btn btn-success px-4 fw-bold">
+                                    <i class="bi bi-send-check me-1"></i> Đăng ký lớp này
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary px-4" disabled>Lớp tạm ngưng nhận học viên</button>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

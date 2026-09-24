@@ -1,0 +1,274 @@
+@*
+    Họ và tên: Phạm Đức Duy-23103100084    
+    Nội dung thực hiện: Module 2 - Giao diện tra cứu lớp học (Tìm kiếm, Lọc, Sắp xếp, Phân trang) và Quản trị CRUD
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.LopHocIndexViewModel
+
+@{
+    ViewData["Title"] = "Quản lý & Tra cứu Lớp học";
+    var vaiTro = Context.Session.GetString("VaiTro");
+    bool isAdmin = (vaiTro == "Admin");
+}
+
+<div class="container py-4">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="text-primary fw-bold mb-1">
+                <i class="bi bi-mortarboard-fill me-2"></i>QUẢN LÝ & TRA CỨU LỚP HỌC
+            </h2>
+            <p class="text-muted mb-0">Hệ thống tra cứu, lọc và quản trị lớp học dành cho Admin và Học viên</p>
+        </div>
+        @if (isAdmin)
+        {
+            <a asp-action="Create" class="btn btn-success px-4 py-2 shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Thêm Lớp học mới
+            </a>
+        }
+    </div>
+
+    <!-- THÔNG BÁO KẾT QUẢ THAO TÁC (SUCCESS / ERROR) -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Tìm kiếm từ khóa</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="text" name="SearchKeyword" value="@Model.SearchKeyword" class="form-control" placeholder="Tên lớp hoặc khóa học..." />
+                        </div>
+                    </div>
+
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Khóa học</label>
+                        <select name="MaKhoaHoc" class="form-select" asp-items="ViewBag.KhoaHocList">
+                            <option value="">-- Tất cả khóa học --</option>
+                        </select>
+                    </div>
+
+                    
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Ngoại ngữ</label>
+                        <select name="NgoaiNgu" class="form-select" asp-items="ViewBag.NgoaiNguList">
+                            <option value="">-- Tất cả --</option>
+                        </select>
+                    </div>
+
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Trạng thái lớp</label>
+                        <select name="TrangThai" class="form-select" asp-items="ViewBag.TrangThaiList">
+                            <option value="">-- Tất cả trạng thái --</option>
+                        </select>
+                    </div>
+
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Học phí từ (VNĐ)</label>
+                        <input type="number" name="GiaTu" value="@Model.GiaTu" class="form-control" placeholder="Tối thiểu..." step="50000" />
+                    </div>
+
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Học phí đến (VNĐ)</label>
+                        <input type="number" name="GiaDen" value="@Model.GiaDen" class="form-control" placeholder="Tối đa..." step="50000" />
+                    </div>
+
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Sắp xếp theo</label>
+                        <select name="SortOrder" class="form-select">
+                            <option value="name_asc" selected="@(Model.SortOrder == "name_asc")">Tên lớp A → Z</option>
+                            <option value="name_desc" selected="@(Model.SortOrder == "name_desc")">Tên lớp Z → A</option>
+                            <option value="price_asc" selected="@(Model.SortOrder == "price_asc")">Học phí Thấp → Cao</option>
+                            <option value="price_desc" selected="@(Model.SortOrder == "price_desc")">Học phí Cao → Thấp</option>
+                            <option value="date_asc" selected="@(Model.SortOrder == "date_asc")">Ngày khai giảng Tăng dần</option>
+                            <option value="date_desc" selected="@(Model.SortOrder == "date_desc")">Ngày khai giảng Giảm dần</option>
+                        </select>
+                    </div>
+
+                    
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-funnel-fill me-1"></i> Áp dụng Lọc
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary py-2" title="Xóa bộ lọc">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BẢNG HIỂN THỊ DANH SÁCH LỚP HỌC -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-secondary">
+                Tìm thấy <span class="text-primary fs-5">@Model.TotalItems</span> lớp học thỏa mãn điều kiện
+            </span>
+            <span class="badge bg-secondary">Trang @Model.CurrentPage / @(Model.TotalPages == 0 ? 1 : Model.TotalPages)</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-primary text-nowrap">
+                    <tr>
+                        <th>Mã lớp</th>
+                        <th>Tên lớp</th>
+                        <th>Khóa học</th>
+                        <th>Khai giảng</th>
+                        <th>Lịch học</th>
+                        <th>Phòng</th>
+                        <th>Sĩ số tối đa</th>
+                        <th>Học phí</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachLop != null && Model.DanhSachLop.Any())
+                    {
+                        @foreach (var item in Model.DanhSachLop)
+                        {
+                            <tr>
+                                <td class="fw-bold text-muted">#@item.MaLop</td>
+                                <td class="fw-bold text-primary">@item.TenLop</td>
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        @(item.KhoaHoc?.TenKhoaHoc ?? "Chưa xác định")
+                                    </span>
+                                </td>
+                                <td>@item.NgayKhaiGiang.ToString("dd/MM/yyyy")</td>
+                                <td><small class="text-muted">@item.LichHoc</small></td>
+                                <td>@item.PhongHoc</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@item.SoLuongToiDa học viên</span></td>
+                                <td class="text-danger fw-bold">@item.HocPhi.ToString("N0") VNĐ</td>
+                                <td>
+                                    @switch (item.TrangThai)
+                                    {
+                                        case "Đang tuyển sinh":
+                                            <span class="badge bg-success">Đang tuyển sinh</span>
+                                            break;
+                                        case "Sắp mở":
+                                            <span class="badge bg-warning text-dark">Sắp mở</span>
+                                            break;
+                                        case "Đang học":
+                                            <span class="badge bg-primary">Đang học</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">Đã kết thúc</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-center text-nowrap">
+                                    <a asp-action="Details" asp-route-id="@item.MaLop" class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                        <i class="bi bi-eye"></i> Chi tiết
+                                    </a>
+
+                                    @if (isAdmin)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.MaLop" class="btn btn-sm btn-outline-warning ms-1" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil-square"></i> Sửa
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.MaLop" class="btn btn-sm btn-outline-danger ms-1" title="Xóa">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                Không tìm thấy lớp học nào phù hợp với điều kiện tìm kiếm và lọc.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer bg-white py-3">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mb-0">
+                        
+                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-CurrentPage="@(Model.CurrentPage - 1)"
+                               asp-route-SearchKeyword="@Model.SearchKeyword"
+                               asp-route-MaKhoaHoc="@Model.MaKhoaHoc"
+                               asp-route-NgoaiNgu="@Model.NgoaiNgu"
+                               asp-route-TrangThai="@Model.TrangThai"
+                               asp-route-GiaTu="@Model.GiaTu"
+                               asp-route-GiaDen="@Model.GiaDen"
+                               asp-route-SortOrder="@Model.SortOrder">
+                                &laquo; Trước
+                            </a>
+                        </li>
+
+                        
+                        @for (int p = 1; p <= Model.TotalPages; p++)
+                        {
+                            <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-CurrentPage="@p"
+                                   asp-route-SearchKeyword="@Model.SearchKeyword"
+                                   asp-route-MaKhoaHoc="@Model.MaKhoaHoc"
+                                   asp-route-NgoaiNgu="@Model.NgoaiNgu"
+                                   asp-route-TrangThai="@Model.TrangThai"
+                                   asp-route-GiaTu="@Model.GiaTu"
+                                   asp-route-GiaDen="@Model.GiaDen"
+                                   asp-route-SortOrder="@Model.SortOrder">
+                                    @p
+                                </a>
+                            </li>
+                        }
+
+                        <!-- Nút Trang sau -->
+                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-CurrentPage="@(Model.CurrentPage + 1)"
+                               asp-route-SearchKeyword="@Model.SearchKeyword"
+                               asp-route-MaKhoaHoc="@Model.MaKhoaHoc"
+                               asp-route-NgoaiNgu="@Model.NgoaiNgu"
+                               asp-route-TrangThai="@Model.TrangThai"
+                               asp-route-GiaTu="@Model.GiaTu"
+                               asp-route-GiaDen="@Model.GiaDen"
+                               asp-route-SortOrder="@Model.SortOrder">
+                                Sau &raquo;
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>
