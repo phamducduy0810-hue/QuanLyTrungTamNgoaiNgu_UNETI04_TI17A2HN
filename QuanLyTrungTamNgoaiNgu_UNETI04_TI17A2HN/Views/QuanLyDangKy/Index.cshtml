@@ -1,0 +1,111 @@
+@* Họ và tên: Lê Đăng Duy *@
+@* Mã sinh viên: 23103100089 *@
+@* Nội dung thực hiện: Module 4 - Giao diện danh sách quản lý đăng ký *@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.DangKyIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý đăng ký";
+}
+
+@functions {
+    string BadgeClass(string trangThai) => trangThai switch
+    {
+        TrangThaiDangKy.DaXacNhan => "bg-success",
+        TrangThaiDangKy.DaHuy => "bg-secondary",
+        _ => "bg-warning text-dark"
+    };
+}
+
+<h2 class="mb-3">Quản lý đăng ký</h2>
+
+@if (TempData["ThanhCong"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["ThanhCong"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Loi"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Loi"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form asp-action="Index" method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text" name="tuKhoa" value="@Model.TuKhoa" class="form-control" placeholder="Tìm theo tên học viên..." />
+    </div>
+    <div class="col-md-3">
+        <select name="maLop" asp-for="MaLop" asp-items="Model.DanhSachLop" class="form-select">
+            <option value="">-- Tất cả lớp --</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="trangThai" class="form-select">
+            <option value="">-- Tất cả trạng thái --</option>
+            @foreach (var tt in Model.DanhSachTrangThai)
+            {
+                <option value="@tt" selected="@(tt == Model.TrangThai)">@tt</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+    </div>
+</form>
+
+<p class="text-muted">Tìm thấy <strong>@Model.DanhSach.Count</strong> đăng ký.</p>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Mã</th>
+            <th>Học viên</th>
+            <th>Lớp</th>
+            <th>Khóa học</th>
+            <th>Ngày đăng ký</th>
+            <th class="text-end">Học phí</th>
+            <th>Trạng thái</th>
+            <th style="width:230px">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.DanhSach)
+        {
+            <tr>
+                <td>@item.MaDangKy</td>
+                <td>@item.HocVien?.HoTen</td>
+                <td>@item.LopHoc?.TenLop</td>
+                <td>@item.LopHoc?.KhoaHoc?.TenKhoaHoc</td>
+                <td>@item.NgayDangKy.ToString("dd/MM/yyyy")</td>
+                <td class="text-end">@item.HocPhi.ToString("N0") đ</td>
+                <td><span class="badge @BadgeClass(item.TrangThai)">@item.TrangThai</span></td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.MaDangKy" class="btn btn-sm btn-info text-white">Chi tiết</a>
+
+                    @if (item.TrangThai == TrangThaiDangKy.ChoXacNhan)
+                    {
+                        <form asp-action="XacNhan" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@item.MaDangKy" />
+                            <button type="submit" class="btn btn-sm btn-success">Xác nhận</button>
+                        </form>
+                    }
+                    @if (item.TrangThai != TrangThaiDangKy.DaHuy)
+                    {
+                        <form asp-action="Huy" method="post" class="d-inline"
+                              onsubmit="return confirm('Bạn chắc chắn muốn hủy đăng ký này?');">
+                            <input type="hidden" name="id" value="@item.MaDangKy" />
+                            <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        @if (!Model.DanhSach.Any())
+        {
+            <tr><td colspan="8" class="text-center text-muted">Không có đăng ký nào phù hợp.</td></tr>
+        }
+    </tbody>
+</table>

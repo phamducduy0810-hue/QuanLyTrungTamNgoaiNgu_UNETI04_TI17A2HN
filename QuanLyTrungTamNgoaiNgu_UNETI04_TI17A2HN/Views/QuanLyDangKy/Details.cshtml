@@ -1,0 +1,81 @@
+@* Họ và tên: Lê Đăng Duy *@
+@* Mã sinh viên: 23103100089 *@
+@* Nội dung thực hiện: Module 4 - Giao diện chi tiết đăng ký và cập nhật trạng thái *@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.DangKyHoc
+@{
+    ViewData["Title"] = "Chi tiết đăng ký";
+    int soDaXacNhan = ViewBag.SoDaXacNhan;
+    var dsTrangThai = (string[])ViewBag.DanhSachTrangThai;
+    int toiDa = Model.LopHoc?.SoLuongToiDa ?? 0;
+}
+
+<h2 class="mb-3">Chi tiết đăng ký #@Model.MaDangKy</h2>
+
+@if (TempData["ThanhCong"] != null)
+{
+    <div class="alert alert-success">@TempData["ThanhCong"]</div>
+}
+@if (TempData["Loi"] != null)
+{
+    <div class="alert alert-danger">@TempData["Loi"]</div>
+}
+
+<div class="row">
+    <div class="col-md-7">
+        <table class="table table-bordered">
+            <tr><th style="width:35%">Học viên</th><td>@Model.HocVien?.HoTen</td></tr>
+            <tr><th>Email</th><td>@Model.HocVien?.Email</td></tr>
+            <tr><th>Số điện thoại</th><td>@Model.HocVien?.SoDienThoai</td></tr>
+            <tr><th>Lớp học</th><td>@Model.LopHoc?.TenLop</td></tr>
+            <tr><th>Khóa học</th><td>@Model.LopHoc?.KhoaHoc?.TenKhoaHoc</td></tr>
+            <tr><th>Ngày khai giảng</th><td>@Model.LopHoc?.NgayKhaiGiang.ToString("dd/MM/yyyy")</td></tr>
+            <tr><th>Sĩ số đã xác nhận</th><td>@soDaXacNhan / @toiDa</td></tr>
+            <tr><th>Ngày đăng ký</th><td>@Model.NgayDangKy.ToString("dd/MM/yyyy")</td></tr>
+            <tr><th>Học phí</th><td>@Model.HocPhi.ToString("N0") đ</td></tr>
+            <tr><th>Trạng thái</th><td><strong>@Model.TrangThai</strong></td></tr>
+        </table>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">Cập nhật trạng thái</div>
+            <div class="card-body">
+                <form asp-action="CapNhatTrangThai" method="post">
+                    <input type="hidden" name="id" value="@Model.MaDangKy" />
+                    <div class="mb-3">
+                        <select name="trangThai" class="form-select">
+                            @foreach (var tt in dsTrangThai)
+                            {
+                                <option value="@tt" selected="@(tt == Model.TrangThai)">@tt</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu trạng thái</button>
+                </form>
+
+                <hr />
+                <div class="d-flex gap-2">
+                    @if (Model.TrangThai == TrangThaiDangKy.ChoXacNhan)
+                    {
+                        <form asp-action="XacNhan" method="post">
+                            <input type="hidden" name="id" value="@Model.MaDangKy" />
+                            <input type="hidden" name="quayLai" value="Details" />
+                            <button type="submit" class="btn btn-success">Xác nhận</button>
+                        </form>
+                    }
+                    @if (Model.TrangThai != TrangThaiDangKy.DaHuy)
+                    {
+                        <form asp-action="Huy" method="post"
+                              onsubmit="return confirm('Bạn chắc chắn muốn hủy đăng ký này?');">
+                            <input type="hidden" name="id" value="@Model.MaDangKy" />
+                            <input type="hidden" name="quayLai" value="Details" />
+                            <button type="submit" class="btn btn-danger">Hủy đăng ký</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-outline-secondary mt-3">&larr; Quay lại danh sách</a>
