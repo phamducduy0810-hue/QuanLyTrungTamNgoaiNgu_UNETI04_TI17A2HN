@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
+ 
 namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models
 {
     public class HocVien
