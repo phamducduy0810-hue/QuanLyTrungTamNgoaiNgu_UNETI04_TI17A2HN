@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data;
+using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels;
 
 namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
