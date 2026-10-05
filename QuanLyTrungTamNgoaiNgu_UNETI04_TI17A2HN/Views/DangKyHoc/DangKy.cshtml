@@ -1,0 +1,66 @@
+@*
+    Họ và tên: Diem Duc Hung
+    Mã sinh viên: 23103100099
+    Nội dung thực hiện: Module 3 - Xác nhận đăng ký học
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.HocVien
+
+@{
+    ViewData["Title"] = "Xác nhận đăng ký";
+    var lopHoc = ViewBag.LopHoc as QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.LopHoc;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-check-circle me-2"></i>XÁC NHẬN ĐĂNG KÝ HỌC</h4>
+                </div>
+                <div class="card-body p-4">
+                    <h5 class="text-primary mb-3">Thông tin học viên</h5>
+                    <dl class="row mb-4">
+                        <dt class="col-sm-4 text-muted">Họ và tên:</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.HoTen</dd>
+                        
+                        <dt class="col-sm-4 text-muted">Số điện thoại:</dt>
+                        <dd class="col-sm-8">@Model.SoDienThoai</dd>
+                        
+                        <dt class="col-sm-4 text-muted">Email:</dt>
+                        <dd class="col-sm-8">@Model.Email</dd>
+                    </dl>
+                    
+                    <h5 class="text-primary mb-3 border-top pt-3">Thông tin lớp học</h5>
+                    <dl class="row mb-4">
+                        <dt class="col-sm-4 text-muted">Tên lớp:</dt>
+                        <dd class="col-sm-8 fw-bold">@lopHoc?.TenLop</dd>
+                        
+                        <dt class="col-sm-4 text-muted">Khóa học:</dt>
+                        <dd class="col-sm-8">@lopHoc?.KhoaHoc?.TenKhoaHoc</dd>
+                        
+                        <dt class="col-sm-4 text-muted">Học phí:</dt>
+                        <dd class="col-sm-8 text-danger fw-bold fs-5">@lopHoc?.HocPhi.ToString("N0") VNĐ</dd>
+                    </dl>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Bằng việc xác nhận, bạn đồng ý đăng ký tham gia lớp học này. Vui lòng thanh toán học phí theo hướng dẫn của trung tâm sau khi đăng ký được xác nhận.
+                    </div>
+
+                    <form asp-action="XacNhanDangKy" method="post">
+                        <input type="hidden" name="maLop" value="@lopHoc?.MaLop" />
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-controller="LopHocs" asp-action="Details" asp-route-id="@lopHoc?.MaLop" class="btn btn-outline-secondary px-4">
+                                Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-success px-4 fw-bold">
+                                <i class="bi bi-send-check me-2"></i>Xác nhận đăng ký
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

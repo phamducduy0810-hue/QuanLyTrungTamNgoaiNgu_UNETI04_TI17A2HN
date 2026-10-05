@@ -1,0 +1,54 @@
+@*
+    Họ và tên: Diem Duc Hung
+    Mã sinh viên: 23103100099
+    Nội dung thực hiện: Module 3 - Chi tiết học viên
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.HocVien
+
+@{
+    ViewData["Title"] = "Chi tiết Học viên";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-info text-dark py-3">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill me-2"></i>THÔNG TIN HỌC VIÊN: @Model.HoTen</h4>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted mb-2">Mã học viên:</dt>
+                        <dd class="col-sm-8 fw-bold">#@Model.MaHocVien</dd>
+
+                        <dt class="col-sm-4 text-muted mb-2">Tên đăng nhập:</dt>
+                        <dd class="col-sm-8 text-primary">@(Model.TaiKhoan?.TenDangNhap ?? "N/A")</dd>
+
+                        <dt class="col-sm-4 text-muted mb-2">Họ và tên:</dt>
+                        <dd class="col-sm-8">@Model.HoTen</dd>
+
+                        <dt class="col-sm-4 text-muted mb-2">Ngày sinh:</dt>
+                        <dd class="col-sm-8">@Model.NgaySinh.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-4 text-muted mb-2">Giới tính:</dt>
+                        <dd class="col-sm-8">@Model.GioiTinh</dd>
+
+                        <dt class="col-sm-4 text-muted mb-2">Số điện thoại:</dt>
+                        <dd class="col-sm-8">@Model.SoDienThoai</dd>
+
+                        <dt class="col-sm-4 text-muted mb-2">Email:</dt>
+                        <dd class="col-sm-8">@Model.Email</dd>
+
+                        <dt class="col-sm-4 text-muted mb-2">Địa chỉ:</dt>
+                        <dd class="col-sm-8">@Model.DiaChi</dd>
+                    </dl>
+                </div>
+                <div class="card-footer bg-light p-3">
+                    <a asp-action="Index" class="btn btn-secondary px-4">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

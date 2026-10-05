@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -21,11 +21,26 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="LopHocs" asp-action="Index">Lớp học</a>
                         </li>
+                        @{
+                            var vaiTro = Context.Session.GetString("VaiTro");
+                            if (vaiTro == "Admin")
+                            {
+                                <li class="nav-item"><a class="nav-link text-dark" asp-controller="HocViens" asp-action="Index">QL Học Viên</a></li>
+                                <li class="nav-item"><a class="nav-link text-dark" asp-controller="QuanLyDangKy" asp-action="Index">QL Đăng Ký</a></li>
+                                <li class="nav-item"><a class="nav-link text-dark" asp-controller="ThongKe" asp-action="Index">Thống Kê</a></li>
+                                <li class="nav-item"><a class="nav-link text-dark" asp-controller="ThongKe" asp-action="Dashboard">Dashboard</a></li>
+                            }
+                            else if (vaiTro == "HocVien")
+                            {
+                                <li class="nav-item"><a class="nav-link text-dark" asp-controller="DangKyHoc" asp-action="LichSu">Lịch sử ĐK</a></li>
+                                <li class="nav-item"><a class="nav-link text-dark" asp-controller="HocViens" asp-action="CaNhan">Thông tin cá nhân</a></li>
+                            }
+                        }
                     </ul>
                 </div>
             </div>
