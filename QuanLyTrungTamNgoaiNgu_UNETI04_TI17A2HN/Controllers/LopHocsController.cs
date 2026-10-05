@@ -12,9 +12,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 {
     public class LopHocsController : Controller
     {
-        private readonly QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HNContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public LopHocsController(QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HNContext context)
+        public LopHocsController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -22,7 +22,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         // GET: LopHocs
         public async Task<IActionResult> Index()
         {
-            var quanLyTrungTamNgoaiNgu_UNETI04_TI17A2HNContext = _context.LopHoc.Include(l => l.KhoaHoc);
+            var quanLyTrungTamNgoaiNgu_UNETI04_TI17A2HNContext = _context.LopHocs.Include(l => l.KhoaHoc);
             return View(await quanLyTrungTamNgoaiNgu_UNETI04_TI17A2HNContext.ToListAsync());
         }
 
@@ -34,7 +34,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 return NotFound();
             }
 
-            var lopHoc = await _context.LopHoc
+            var lopHoc = await _context.LopHocs
                 .Include(l => l.KhoaHoc)
                 .FirstOrDefaultAsync(m => m.MaLop == id);
             if (lopHoc == null)
@@ -77,7 +77,8 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 return NotFound();
             }
 
-            var lopHoc = await _context.LopHoc.FindAsync(id);
+ 
+            var lopHoc = await _context.LopHocs.FindAsync(id);
             if (lopHoc == null)
             {
                 return NotFound();
@@ -130,7 +131,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 return NotFound();
             }
 
-            var lopHoc = await _context.LopHoc
+            var lopHoc = await _context.LopHocs
                 .Include(l => l.KhoaHoc)
                 .FirstOrDefaultAsync(m => m.MaLop == id);
             if (lopHoc == null)
@@ -146,10 +147,10 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var lopHoc = await _context.LopHoc.FindAsync(id);
+            var lopHoc = await _context.LopHocs.FindAsync(id);
             if (lopHoc != null)
             {
-                _context.LopHoc.Remove(lopHoc);
+                _context.LopHocs.Remove(lopHoc);
             }
 
             await _context.SaveChangesAsync();
@@ -158,7 +159,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
         private bool LopHocExists(int id)
         {
-            return _context.LopHoc.Any(e => e.MaLop == id);
+            return _context.LopHocs.Any(e => e.MaLop == id);
         }
     }
 }
