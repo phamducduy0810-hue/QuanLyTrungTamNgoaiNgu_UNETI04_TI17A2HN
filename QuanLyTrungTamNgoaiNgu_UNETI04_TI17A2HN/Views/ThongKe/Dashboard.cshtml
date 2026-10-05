@@ -2,56 +2,99 @@
 @* Mã sinh viên: 23103100089 *@
 @* Nội dung thực hiện: Module 4 - Giao diện Dashboard Admin *@
 @model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.DashboardViewModel
+@using System.Globalization
 @{
     ViewData["Title"] = "Dashboard";
+
+    int daHuy = Math.Max(Model.TongLuotDangKy - Model.DangKyChoXacNhan - Model.DangKyDaXacNhan, 0);
+    string Pct(int v) => Model.TongLuotDangKy > 0
+        ? (v * 100.0 / Model.TongLuotDangKy).ToString("0.#", CultureInfo.InvariantCulture)
+        : "0";
 }
 
-<h2 class="mb-4">Dashboard quản trị</h2>
+<partial name="_Module4Styles" />
+
+<h2 class="m4-page-title">Dashboard quản trị</h2>
+<p class="m4-page-sub">Tổng quan hoạt động của trung tâm ngoại ngữ.</p>
 
 @if (TempData["ThanhCong"] != null)
 {
-    <div class="alert alert-success">@TempData["ThanhCong"]</div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["ThanhCong"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
 }
 
-<div class="row g-3">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary h-100"><div class="card-body">
-            <div>Tổng số khóa học</div><div class="fs-2 fw-bold">@Model.TongKhoaHoc</div>
-        </div></div>
+<h5 class="mb-3">Quy mô trung tâm</h5>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="m4-stat blue"><div class="label">Khóa học</div><div class="value">@Model.TongKhoaHoc</div></div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info h-100"><div class="card-body">
-            <div>Tổng số lớp học</div><div class="fs-2 fw-bold">@Model.TongLopHoc</div>
-        </div></div>
+    <div class="col-6 col-lg-3">
+        <div class="m4-stat teal"><div class="label">Lớp học</div><div class="value">@Model.TongLopHoc</div></div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-dark h-100"><div class="card-body">
-            <div>Tổng số học viên</div><div class="fs-2 fw-bold">@Model.TongHocVien</div>
-        </div></div>
+    <div class="col-6 col-lg-3">
+        <div class="m4-stat slate"><div class="label">Học viên</div><div class="value">@Model.TongHocVien</div></div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-secondary h-100"><div class="card-body">
-            <div>Tổng lượt đăng ký</div><div class="fs-2 fw-bold">@Model.TongLuotDangKy</div>
-        </div></div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-warning h-100"><div class="card-body">
-            <div>Đăng ký chờ xác nhận</div><div class="fs-2 fw-bold">@Model.DangKyChoXacNhan</div>
-        </div></div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success h-100"><div class="card-body">
-            <div>Đăng ký đã xác nhận</div><div class="fs-2 fw-bold">@Model.DangKyDaXacNhan</div>
-        </div></div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-danger h-100"><div class="card-body">
-            <div>Lớp đang tuyển sinh</div><div class="fs-2 fw-bold">@Model.LopDangTuyenSinh</div>
-        </div></div>
+    <div class="col-6 col-lg-3">
+        <div class="m4-stat red"><div class="label">Lớp đang tuyển sinh</div><div class="value">@Model.LopDangTuyenSinh</div></div>
     </div>
 </div>
 
-<div class="mt-4 d-flex gap-2">
-    <a asp-controller="QuanLyDangKy" asp-action="Index" class="btn btn-outline-primary">Quản lý đăng ký</a>
-    <a asp-controller="ThongKe" asp-action="Index" class="btn btn-outline-primary">Xem thống kê chi tiết</a>
+<h5 class="mb-3">Đăng ký học</h5>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="m4-stat blue"><div class="label">Tổng lượt đăng ký</div><div class="value">@Model.TongLuotDangKy</div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="m4-stat amber"><div class="label">Chờ xác nhận</div><div class="value">@Model.DangKyChoXacNhan</div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="m4-stat green"><div class="label">Đã xác nhận</div><div class="value">@Model.DangKyDaXacNhan</div></div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="m4-card h-100">
+            <div class="m4-card-head">Cơ cấu trạng thái đăng ký</div>
+            <div class="m4-card-body">
+                @if (Model.TongLuotDangKy == 0)
+                {
+                    <p class="text-muted mb-0">Chưa có lượt đăng ký nào.</p>
+                }
+                else
+                {
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1"><span>Chờ xác nhận</span><span>@Model.DangKyChoXacNhan (@Pct(Model.DangKyChoXacNhan)%)</span></div>
+                        <div class="m4-bar amber"><span style="width:@(Pct(Model.DangKyChoXacNhan))%"></span></div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1"><span>Đã xác nhận</span><span>@Model.DangKyDaXacNhan (@Pct(Model.DangKyDaXacNhan)%)</span></div>
+                        <div class="m4-bar green"><span style="width:@(Pct(Model.DangKyDaXacNhan))%"></span></div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between small mb-1"><span>Đã hủy</span><span>@daHuy (@Pct(daHuy)%)</span></div>
+                        <div class="m4-bar"><span style="width:@(Pct(daHuy))%; background:#868e96"></span></div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="m4-card h-100">
+            <div class="m4-card-head">Lối tắt</div>
+            <div class="m4-card-body d-grid gap-2">
+                @if (Model.DangKyChoXacNhan > 0)
+                {
+                    <a asp-controller="QuanLyDangKy" asp-action="Index" asp-route-trangThai="@TrangThaiDangKy.ChoXacNhan" class="btn btn-warning">
+                        Xử lý @Model.DangKyChoXacNhan đăng ký chờ xác nhận
+                    </a>
+                }
+                <a asp-controller="QuanLyDangKy" asp-action="Index" class="btn btn-outline-primary">Quản lý đăng ký</a>
+                <a asp-controller="ThongKe" asp-action="Index" class="btn btn-outline-primary">Xem thống kê chi tiết</a>
+            </div>
+        </div>
+    </div>
 </div>
