@@ -113,7 +113,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                     SoDienThoai = model.SoDienThoai,
                     Email = model.Email,
                     GioiTinh = model.GioiTinh,
-                    NgaySinh = model.NgaySinh,
+                    NgaySinh = (DateTime)model.NgaySinh,
                     DiaChi = model.DiaChi
                 };
 

@@ -31,7 +31,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
             if (!string.IsNullOrWhiteSpace(searchCapDo))
             {
-                query = query.Where(k => k.CapDo == searchCapDo);
+                query = query.Where(k => k.CapDo == searchCapDo); 
             }
 
             if (!string.IsNullOrWhiteSpace(searchKeyword))

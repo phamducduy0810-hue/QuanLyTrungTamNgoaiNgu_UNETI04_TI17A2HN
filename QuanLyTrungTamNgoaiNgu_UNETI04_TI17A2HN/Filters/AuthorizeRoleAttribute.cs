@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Filters
 {
-    public class AuthorizeRoleAttribute : ActionFilterAttribute
+    public class AuthorizeRoleAttribute : ActionFilterAttribute 
     {
         private readonly string[] _allowedRoles;
 
