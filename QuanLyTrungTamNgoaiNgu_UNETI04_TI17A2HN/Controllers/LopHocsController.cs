@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,10 +20,75 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         }
 
         // GET: LopHocs
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchKeyword, int? maKhoaHoc, string ngoaiNgu, string trangThai, decimal? giaTu, decimal? giaDen, string sortOrder, int page = 1)
         {
-            var quanLyTrungTamNgoaiNgu_UNETI04_TI17A2HNContext = _context.LopHocs.Include(l => l.KhoaHoc);
-            return View(await quanLyTrungTamNgoaiNgu_UNETI04_TI17A2HNContext.ToListAsync());
+            int pageSize = 5;
+            var query = _context.LopHocs.Include(l => l.KhoaHoc).AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchKeyword))
+            {
+                query = query.Where(l => l.TenLop.Contains(searchKeyword));
+            }
+            if (maKhoaHoc.HasValue)
+            {
+                query = query.Where(l => l.MaKhoaHoc == maKhoaHoc);
+            }
+            if (!string.IsNullOrEmpty(ngoaiNgu))
+            {
+                query = query.Where(l => l.KhoaHoc.NgoaiNgu.Contains(ngoaiNgu));
+            }
+            if (!string.IsNullOrEmpty(trangThai))
+            {
+                query = query.Where(l => l.TrangThai == trangThai);
+            }
+            if (giaTu.HasValue)
+            {
+                query = query.Where(l => l.HocPhi >= giaTu);
+            }
+            if (giaDen.HasValue)
+            {
+                query = query.Where(l => l.HocPhi <= giaDen);
+            }
+
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    query = query.OrderByDescending(l => l.TenLop);
+                    break;
+                case "price_asc":
+                    query = query.OrderBy(l => l.HocPhi);
+                    break;
+                case "price_desc":
+                    query = query.OrderByDescending(l => l.HocPhi);
+                    break;
+                default:
+                    query = query.OrderBy(l => l.TenLop);
+                    break;
+            }
+
+            int totalItems = await query.CountAsync();
+            var danhSach = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            var viewModel = new LopHocIndexViewModel
+            {
+                DanhSachLop = danhSach,
+                SearchKeyword = searchKeyword,
+                MaKhoaHoc = maKhoaHoc,
+                NgoaiNgu = ngoaiNgu,
+                TrangThai = trangThai,
+                GiaTu = giaTu,
+                GiaDen = giaDen,
+                SortOrder = sortOrder,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems
+            };
+
+            ViewBag.KhoaHocList = new SelectList(await _context.KhoaHocs.ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", maKhoaHoc);
+            ViewBag.NgoaiNguList = new SelectList(await _context.KhoaHocs.Select(k => k.NgoaiNgu).Distinct().ToListAsync(), ngoaiNgu);
+            ViewBag.TrangThaiList = new SelectList(new List<string> { "Sắp khai giảng", "Đang học", "Đã kết thúc" }, trangThai);
+
+            return View(viewModel);
         }
 
         // GET: LopHocs/Details/5

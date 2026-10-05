@@ -30,7 +30,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data
                 .HasOne(h => h.TaiKhoan)
                 .WithOne(t => t.HocVien)
                 .HasForeignKey<HocVien>(h => h.MaTaiKhoan)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             
             modelBuilder.Entity<LopHoc>()
