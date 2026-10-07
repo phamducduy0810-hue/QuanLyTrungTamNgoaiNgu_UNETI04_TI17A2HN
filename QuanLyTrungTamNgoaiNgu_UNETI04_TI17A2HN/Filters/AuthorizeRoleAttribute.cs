@@ -5,36 +5,37 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
+
 namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Filters
 {
-    public class AuthorizeRoleAttribute : ActionFilterAttribute 
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+    public class AuthorizeRoleAttribute : Attribute, IAuthorizationFilter
     {
-        private readonly string[] _allowedRoles;
+        private readonly string[] _roles;
 
-        public AuthorizeRoleAttribute(params string[] allowedRoles)
+        public AuthorizeRoleAttribute(params string[] roles)
         {
-            _allowedRoles = allowedRoles;
+            _roles = roles;
         }
 
-        public override void OnActionExecuting(ActionExecutingContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var session = context.HttpContext.Session;
-            var maTaiKhoan = session.GetInt32("MaTaiKhoan");
-            var vaiTro = session.GetString("VaiTro");
+            var vaiTro = context.HttpContext.Session.GetString("VaiTro");
 
-            if (!maTaiKhoan.HasValue || string.IsNullOrEmpty(vaiTro))
+            // Chưa đăng nhập -> về trang Login, nhớ trang đang truy cập
+            if (string.IsNullOrEmpty(vaiTro))
             {
-                context.Result = new RedirectToActionResult("Login", "TaiKhoan", new { returnUrl = context.HttpContext.Request.Path });
+                var request = context.HttpContext.Request;
+                var returnUrl = request.Path + request.QueryString;
+                context.Result = new RedirectToActionResult("Login", "TaiKhoan", new { returnUrl });
                 return;
             }
 
-            if (_allowedRoles.Length > 0 && !_allowedRoles.Contains(vaiTro))
+            // Đã đăng nhập nhưng sai vai trò -> trang từ chối truy cập
+            if (_roles.Length > 0 && !_roles.Contains(vaiTro))
             {
                 context.Result = new RedirectToActionResult("AccessDenied", "TaiKhoan", null);
-                return;
             }
-
-            base.OnActionExecuting(context);
         }
     }
 }

@@ -1,6 +1,6 @@
 // Họ và tên: Phạm Văn Công
 // Mã sinh viên: 23103100115
-// Nội dung thực hiện: Module 1 - TaiKhoanController (Đăng nhập, Đăng ký, Đăng xuất, Đổi mật khẩu, Quản lý tài khoản Admin)
+// Nội dung thực hiện: Module 1 - TaiKhoanController (Đăng nhập, Đăng ký, Đăng xuất, Profile, Quản lý tài khoản Admin)
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +13,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 {
     public class TaiKhoanController : Controller
     {
-        private readonly TrungTamDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public TaiKhoanController(TrungTamDbContext context)
+        public TaiKhoanController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -112,9 +112,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                     HoTen = model.HoTen,
                     SoDienThoai = model.SoDienThoai,
                     Email = model.Email,
-                    GioiTinh = model.GioiTinh,
-                    NgaySinh = (DateTime)model.NgaySinh,
-                    DiaChi = model.DiaChi
+                    GioiTinh = model.GioiTinh ?? "Nam",
+                    NgaySinh = model.NgaySinh ?? DateTime.Now.AddYears(-20),
+                    DiaChi = model.DiaChi ?? ""
                 };
 
                 _context.HocViens.Add(hocVien);

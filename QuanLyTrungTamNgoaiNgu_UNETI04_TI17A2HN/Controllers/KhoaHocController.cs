@@ -12,9 +12,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 {
     public class KhoaHocController : Controller
     {
-        private readonly TrungTamDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public KhoaHocController(TrungTamDbContext context)
+        public KhoaHocController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -31,7 +31,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
             if (!string.IsNullOrWhiteSpace(searchCapDo))
             {
-                query = query.Where(k => k.CapDo == searchCapDo); 
+                query = query.Where(k => k.CapDo == searchCapDo);
             }
 
             if (!string.IsNullOrWhiteSpace(searchKeyword))
