@@ -1,8 +1,151 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Trang Chủ - Trung Tâm Ngoại Ngữ UNETI";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- HERO BANNER -->
+<div class="page-header-banner p-5 text-center text-md-start rounded-4 mb-5 position-relative overflow-hidden">
+    <div class="row align-items-center position-relative z-1">
+        <div class="col-lg-8">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3">
+                <i class="fa-solid fa-star me-1"></i> DỰ ÁN BÀI TẬP LỚN UNETI04
+            </span>
+            <h1 class="display-4 fw-extrabold text-white mb-3">Chinh Phục Ngoại Ngữ Dễ Dàng Cùng UNETI</h1>
+            <p class="lead text-light opacity-90 mb-4">Hệ thống quản lý đào tạo và đăng ký khóa học trực tuyến thông minh. Mở rộng cơ hội nghề nghiệp toàn cầu cho sinh viên UNETI!</p>
+            <div class="d-flex flex-wrap gap-3">
+                <a class="btn btn-warning btn-lg fw-bold px-4 rounded-pill text-dark shadow" asp-controller="LopHocs" asp-action="Index">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i>Tìm Lớp Học Ngay
+                </a>
+                <a class="btn btn-outline-light btn-lg fw-bold px-4 rounded-pill" asp-controller="KhoaHoc" asp-action="Index">
+                    <i class="fa-solid fa-book-open me-2"></i>Xem Khóa Học
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 text-center mt-4 mt-lg-0">
+            <i class="fa-solid fa-earth-asia fa-10x text-white opacity-25"></i>
+        </div>
+    </div>
+</div>
+
+<!-- STATS COUNTER -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card-custom p-4 text-center border-start border-primary border-4">
+            <div class="text-primary mb-2"><i class="fa-solid fa-graduation-cap fa-3x"></i></div>
+            <h2 class="fw-extrabold mb-1">5+</h2>
+            <p class="text-muted fw-semibold mb-0">Khóa Học Đa Dạng</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom p-4 text-center border-start border-success border-4">
+            <div class="text-success mb-2"><i class="fa-solid fa-chalkboard-user fa-3x"></i></div>
+            <h2 class="fw-extrabold mb-1">10+</h2>
+            <p class="text-muted fw-semibold mb-0">Lớp Học Mở Thường Xuyên</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom p-4 text-center border-start border-warning border-4">
+            <div class="text-warning mb-2"><i class="fa-solid fa-users fa-3x"></i></div>
+            <h2 class="fw-extrabold mb-1">500+</h2>
+            <p class="text-muted fw-semibold mb-0">Học Viên Tin Tưởng</p>
+        </div>
+    </div>
+</div>
+
+<!-- KHÓA HỌC NỔI BẬT -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-extrabold mb-1"><i class="fa-solid fa-fire text-danger me-2"></i>Khóa Học Nổi Bật</h3>
+        <p class="text-muted mb-0">Các chương trình đào tạo chuẩn quốc tế thu hút đông đảo sinh viên nhất</p>
+    </div>
+    <a class="btn btn-outline-primary fw-semibold rounded-pill" asp-controller="KhoaHoc" asp-action="Index">Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i></a>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+        <div class="card-custom h-100 p-4 d-flex flex-column justify-content-between border-0 shadow-sm">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">Tiếng Anh</span>
+                    <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">Sơ cấp</span>
+                </div>
+                <h5 class="fw-bold mb-2">Tiếng Anh Giao Tiếp Căn Bản</h5>
+                <p class="text-muted small mb-3">Chương trình cải thiện phản xạ phát âm chuẩn và giao tiếp hằng ngày.</p>
+            </div>
+            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small d-block">Học phí:</span>
+                    <strong class="text-danger fs-5">2,500,000 đ</strong>
+                </div>
+                <a class="btn btn-sm btn-primary rounded-pill px-3" asp-controller="KhoaHoc" asp-action="Index">
+                    Xem Chi Tiết
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card-custom h-100 p-4 d-flex flex-column justify-content-between border-0 shadow-sm">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">Tiếng Anh</span>
+                    <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">Trung cấp</span>
+                </div>
+                <h5 class="fw-bold mb-2">Luyện Thi IELTS 6.5+</h5>
+                <p class="text-muted small mb-3">Chiến thuật 4 kỹ năng Nghe, Nói, Đọc, Viết đạt mục tiêu 6.5+.</p>
+            </div>
+            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small d-block">Học phí:</span>
+                    <strong class="text-danger fs-5">5,800,000 đ</strong>
+                </div>
+                <a class="btn btn-sm btn-primary rounded-pill px-3" asp-controller="KhoaHoc" asp-action="Index">
+                    Xem Chi Tiết
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card-custom h-100 p-4 d-flex flex-column justify-content-between border-0 shadow-sm">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">Tiếng Trung</span>
+                    <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">Trung cấp</span>
+                </div>
+                <h5 class="fw-bold mb-2">Tiếng Trung HSK 3</h5>
+                <p class="text-muted small mb-3">Trang bị 600 từ vựng HSK 3 và viết chữ Hán tự tin.</p>
+            </div>
+            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small d-block">Học phí:</span>
+                    <strong class="text-danger fs-5">3,200,000 đ</strong>
+                </div>
+                <a class="btn btn-sm btn-primary rounded-pill px-3" asp-controller="KhoaHoc" asp-action="Index">
+                    Xem Chi Tiết
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card-custom h-100 p-4 d-flex flex-column justify-content-between border-0 shadow-sm">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">Tiếng Nhật</span>
+                    <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">Sơ cấp</span>
+                </div>
+                <h5 class="fw-bold mb-2">Tiếng Nhật JLPT N5</h5>
+                <p class="text-muted small mb-3">Bảng chữ cái Hiragana, Katakana và 800 từ vựng vượt N5.</p>
+            </div>
+            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small d-block">Học phí:</span>
+                    <strong class="text-danger fs-5">2,900,000 đ</strong>
+                </div>
+                <a class="btn btn-sm btn-primary rounded-pill px-3" asp-controller="KhoaHoc" asp-action="Index">
+                    Xem Chi Tiết
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
