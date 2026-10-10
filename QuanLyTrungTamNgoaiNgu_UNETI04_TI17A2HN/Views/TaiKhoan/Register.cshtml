@@ -1,0 +1,93 @@
+@*
+    Họ và tên: Phạm Văn Công
+    Mã sinh viên: 23103100115
+    Nội dung thực hiện: Module 1 - Trang Đăng ký tài khoản học viên mới
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Đăng Ký Tài Khoản Học Viên";
+}
+
+<div class="row justify-content-center my-4">
+    <div class="col-lg-8">
+        <div class="card-custom p-4 p-md-5 shadow-lg border-0">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-user-plus me-2"></i>ĐĂNG KÝ TÀI KHOẢN HỌC VIÊN</h3>
+                <p class="text-muted small">Tạo tài khoản để đăng ký các khóa học ngoại ngữ trực tuyến tại UNETI</p>
+            </div>
+
+            <form asp-action="Register" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small rounded-3 mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-12"><h5 class="fw-bold text-secondary border-bottom pb-2 mb-2"><i class="fa-solid fa-key me-2"></i>Thông tin đăng nhập</h5></div>
+                    <div class="col-md-6">
+                        <label asp-for="TenDangNhap" class="form-label fw-semibold">Tên đăng nhập <span class="text-danger">*</span></label>
+                        <input asp-for="TenDangNhap" class="form-control" placeholder="Tên đăng nhập (viết liền không dấu)" />
+                        <span asp-validation-for="TenDangNhap" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="MatKhau" class="form-label fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
+                        <input asp-for="MatKhau" type="password" class="form-control" placeholder="Ít nhất 4 ký tự" />
+                        <span asp-validation-for="MatKhau" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="XacNhanMatKhau" class="form-label fw-semibold">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                        <input asp-for="XacNhanMatKhau" type="password" class="form-control" placeholder="Nhập lại mật khẩu" />
+                        <span asp-validation-for="XacNhanMatKhau" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 mt-4"><h5 class="fw-bold text-secondary border-bottom pb-2 mb-2"><i class="fa-solid fa-id-card me-2"></i>Thông tin cá nhân học viên</h5></div>
+
+                    <div class="col-md-6">
+                        <label asp-for="HoTen" class="form-label fw-semibold">Họ và Tên <span class="text-danger">*</span></label>
+                        <input asp-for="HoTen" class="form-control" placeholder="Nguyễn Văn A" />
+                        <span asp-validation-for="HoTen" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="example@email.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="SoDienThoai" class="form-label fw-semibold">Số Điện Thoại <span class="text-danger">*</span></label>
+                        <input asp-for="SoDienThoai" class="form-control" placeholder="09xxxxxxxx" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="GioiTinh" class="form-label fw-semibold">Giới Tính</label>
+                        <select asp-for="GioiTinh" class="form-select">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NgaySinh" class="form-label fw-semibold">Ngày Sinh</label>
+                        <input asp-for="NgaySinh" type="date" class="form-control" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DiaChi" class="form-label fw-semibold">Địa Chỉ Cư Trú</label>
+                        <input asp-for="DiaChi" class="form-control" placeholder="Nhập quận/huyện, tỉnh/thành..." />
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                    <a asp-action="Login" class="text-secondary text-decoration-none"><i class="fa-solid fa-arrow-left me-1"></i>Quay lại Đăng nhập</a>
+                    <button type="submit" class="btn btn-warning btn-lg px-4 fw-bold rounded-pill text-dark shadow">
+                        <i class="fa-solid fa-user-check me-2"></i>Đăng Ký Ngay
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

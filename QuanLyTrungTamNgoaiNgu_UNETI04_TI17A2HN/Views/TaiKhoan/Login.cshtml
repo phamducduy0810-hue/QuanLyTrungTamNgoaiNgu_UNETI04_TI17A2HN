@@ -1,0 +1,61 @@
+@*
+    Họ và tên: Phạm Văn Công
+    Mã sinh viên: 23103100115
+    Nội dung thực hiện: Module 1 - Trang Đăng nhập hệ thống
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Đăng Nhập Hệ Thống";
+}
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-5">
+        <div class="card-custom p-4 p-md-5 shadow-lg border-0">
+            <div class="text-center mb-4">
+                <div class="bg-primary text-white d-inline-flex p-3 rounded-circle mb-3 shadow">
+                    <i class="fa-solid fa-graduation-cap fa-2x"></i>
+                </div>
+                <h3 class="fw-bold text-primary mb-1">ĐĂNG NHẬP</h3>
+                <p class="text-muted small">Hệ thống Quản lý Đào tạo Trung tâm Ngoại ngữ UNETI</p>
+            </div>
+
+            <form asp-action="Login" asp-route-returnUrl="@ViewBag.ReturnUrl" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small rounded-3 mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="TenDangNhap" class="form-label fw-semibold">Tên đăng nhập <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-user"></i></span>
+                        <input asp-for="TenDangNhap" class="form-control bg-light border-start-0" placeholder="Nhập tên đăng nhập..." autocomplete="username" />
+                    </div>
+                    <span asp-validation-for="TenDangNhap" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="MatKhau" class="form-label fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-lock"></i></span>
+                        <input asp-for="MatKhau" type="password" class="form-control bg-light border-start-0" placeholder="Nhập mật khẩu..." autocomplete="current-password" />
+                    </div>
+                    <span asp-validation-for="MatKhau" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow mb-3">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i>Đăng Nhập
+                </button>
+
+                <div class="text-center small text-muted">
+                    Chưa có tài khoản? <a asp-action="Register" class="fw-bold text-primary text-decoration-none">Đăng ký ngay tại đây</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-4 p-3 bg-white rounded-3 shadow-sm border text-center small">
+            <span class="text-muted d-block mb-1">💡 <strong>Tài khoản thử nghiệm demo:</strong></span>
+            <span class="badge bg-danger me-1">Admin: admin / 123456</span>
+            <span class="badge bg-success">Học viên: student1 / 123456</span>
+        </div>
+    </div>
+</div>

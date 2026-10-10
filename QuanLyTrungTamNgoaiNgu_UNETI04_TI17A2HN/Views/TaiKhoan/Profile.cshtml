@@ -1,0 +1,72 @@
+@*
+    Họ và tên: Phạm Văn Công
+    Mã sinh viên: 23103100115
+    Nội dung thực hiện: Module 1 - Trang Hồ sơ tài khoản cá nhân
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.TaiKhoan
+
+@{
+    ViewData["Title"] = "Thông Tin Tài Khoản Cá Nhân";
+}
+
+<div class="row justify-content-center my-4">
+    <div class="col-lg-6">
+        <div class="card-custom p-4">
+            <div class="text-center mb-4">
+                <div class="d-inline-block p-3 rounded-circle bg-primary-subtle text-primary mb-2">
+                    <i class="fa-solid fa-user-circle fa-4x"></i>
+                </div>
+                <h4 class="fw-bold mb-1">@Model.HoTen</h4>
+                <span class="badge @(Model.VaiTro == "Admin" ? "bg-danger" : "bg-success") px-3 py-1 rounded-pill">
+                    @(Model.VaiTro == "Admin" ? "QUẢN TRỊ VIÊN" : "HỌC VIÊN")
+                </span>
+            </div>
+
+            <table class="table table-borderless align-middle mb-4">
+                <tbody>
+                    <tr>
+                        <td class="text-muted" style="width: 35%;"><i class="fa-solid fa-hashtag me-2"></i>Mã Tài Khoản:</td>
+                        <td class="fw-bold">#TK@Model.MaTaiKhoan.ToString("D4")</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="fa-solid fa-user me-2"></i>Tên đăng nhập:</td>
+                        <td class="fw-bold text-primary">@Model.TenDangNhap</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="fa-solid fa-envelope me-2"></i>Email:</td>
+                        <td class="fw-bold">@Model.Email</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="fa-solid fa-shield-halved me-2"></i>Trạng thái:</td>
+                        <td>
+                            @if (Model.TrangThai)
+                            {
+                                <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Đang hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger"><i class="fa-solid fa-lock me-1"></i>Đã khóa</span>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            @if (Model.HocVien != null)
+            {
+                <div class="p-3 bg-light rounded-3 mb-4">
+                    <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-id-card me-2"></i>Hồ sơ Học viên liên kết</h6>
+                    <div class="small">
+                        <div>Mã học viên: <strong>#HV@Model.HocVien.MaHocVien.ToString("D4")</strong></div>
+                        <div>Số điện thoại: <strong>@Model.HocVien.SoDienThoai</strong></div>
+                        <div>Địa chỉ: <strong>@(string.IsNullOrEmpty(Model.HocVien.DiaChi) ? "Chưa cập nhật" : Model.HocVien.DiaChi)</strong></div>
+                    </div>
+                </div>
+            }
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Về Trang chủ</a>
+            </div>
+        </div>
+    </div>
+</div>
