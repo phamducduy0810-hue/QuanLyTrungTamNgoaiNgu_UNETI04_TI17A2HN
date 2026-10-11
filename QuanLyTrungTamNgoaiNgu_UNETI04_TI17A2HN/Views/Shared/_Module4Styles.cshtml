@@ -1,0 +1,184 @@
+﻿@* Họ và tên: Lê Đăng Duy *@
+@* Mã sinh viên: 23103100089 *@
+@* Nội dung thực hiện: Module 4 - Partial chứa CSS dùng chung cho Dashboard, Thống kê, Chi tiết đăng ký *@
+<style>
+    .m4-page-title {
+        font-weight: 700;
+        margin-bottom: .25rem;
+    }
+
+    .m4-page-sub {
+        color: #6c757d;
+        margin-bottom: 1.25rem;
+    }
+
+    .m4-sub {
+        font-size: .85rem;
+        color: #6c757d;
+        margin-top: .25rem;
+    }
+
+    /* Thẻ số liệu */
+    .m4-stat {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-left: 5px solid #1971c2;
+        border-radius: .6rem;
+        padding: .9rem 1.1rem;
+        height: 100%;
+        box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+
+        .m4-stat .label {
+            font-size: .85rem;
+            color: #6c757d;
+        }
+
+        .m4-stat .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .m4-stat.blue {
+            border-left-color: #1971c2;
+        }
+
+        .m4-stat.teal {
+            border-left-color: #0ca678;
+        }
+
+        .m4-stat.slate {
+            border-left-color: #495057;
+        }
+
+        .m4-stat.red {
+            border-left-color: #e03131;
+        }
+
+        .m4-stat.amber {
+            border-left-color: #f59f00;
+        }
+
+        .m4-stat.green {
+            border-left-color: #2f9e44;
+        }
+
+    /* Khung (card) */
+    .m4-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: .6rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,.04);
+        overflow: hidden;
+    }
+
+    .m4-card-head {
+        padding: .75rem 1.1rem;
+        font-weight: 600;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .m4-card-body {
+        padding: 1.1rem;
+    }
+
+    /* Bảng */
+    .m4-table {
+        vertical-align: middle;
+    }
+
+        .m4-table thead th {
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            color: #6c757d;
+            background: #fff;
+        }
+
+        .m4-table .num {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+    /* Thanh tiến độ */
+    .m4-bar {
+        height: .6rem;
+        background: #e9ecef;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+        .m4-bar > span {
+            display: block;
+            height: 100%;
+            background: #1971c2;
+            border-radius: 999px;
+        }
+
+        .m4-bar.amber > span {
+            background: #f59f00;
+        }
+
+        .m4-bar.green > span {
+            background: #2f9e44;
+        }
+
+        .m4-bar.red > span {
+            background: #e03131;
+        }
+
+    /* Nhãn trạng thái */
+    .m4-pill {
+        display: inline-block;
+        padding: .2rem .65rem;
+        border-radius: 999px;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+
+        .m4-pill.cho {
+            background: #fff3bf;
+            color: #8a5a00;
+        }
+
+        .m4-pill.xn {
+            background: #d3f9d8;
+            color: #1b6b2c;
+        }
+
+        .m4-pill.huy {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+    /* Danh sách thông tin dạng nhãn - giá trị */
+    .m4-dl {
+        display: grid;
+        grid-template-columns: 11rem 1fr;
+        row-gap: .6rem;
+        margin: 0;
+    }
+
+        .m4-dl dt {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .m4-dl dd {
+            margin: 0;
+            font-weight: 500;
+        }
+
+    @@media (max-width: 575.98px) {
+        .m4-dl {
+            grid-template-columns: 1fr;
+            row-gap: .15rem;
+        }
+
+            .m4-dl dd {
+                margin-bottom: .5rem;
+            }
+    }
+</style>
