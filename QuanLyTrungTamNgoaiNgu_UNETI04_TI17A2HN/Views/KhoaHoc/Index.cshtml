@@ -1,0 +1,111 @@
+@*
+    Họ và tên: Phạm Văn Công
+    Mã sinh viên: 23103100115
+    Nội dung thực hiện: Module 1 - Danh sách Khóa học & Lọc / Tìm kiếm
+*@
+@model IEnumerable<QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc>
+
+@{
+    ViewData["Title"] = "Chương Trình Đào Tạo - Khóa Học Ngoại Ngữ";
+    var session = Context.Session;
+    var vaiTro = session.GetString("VaiTro");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-extrabold text-primary mb-1"><i class="fa-solid fa-book-open me-2"></i>Danh Sách Khóa Học Ngoại Ngữ</h2>
+        <p class="text-muted mb-0">Các chương trình đào tạo chuẩn quốc tế tại Trung tâm Ngoại ngữ UNETI</p>
+    </div>
+    @if (vaiTro == "Admin")
+    {
+        <a asp-action="Create" class="btn btn-warning fw-bold text-dark rounded-pill px-4 shadow">
+            <i class="fa-solid fa-plus me-1"></i>Thêm Khóa Học Mới
+        </a>
+    }
+</div>
+
+<!-- THANH LỌC & TÌM KIẾM KHÓA HỌC -->
+<div class="card-custom p-4 mb-4">
+    <form method="get" asp-action="Index" class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label fw-semibold small text-muted">Ngoại ngữ</label>
+            <select name="searchNgoaiNgu" class="form-select">
+                <option value="">-- Tất cả ngoại ngữ --</option>
+                <option value="Tiếng Anh" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Anh" ? "selected" : null)">Tiếng Anh</option>
+                <option value="Tiếng Trung" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Trung" ? "selected" : null)">Tiếng Trung</option>
+                <option value="Tiếng Nhật" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Nhật" ? "selected" : null)">Tiếng Nhật</option>
+                <option value="Tiếng Hàn" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Hàn" ? "selected" : null)">Tiếng Hàn</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label fw-semibold small text-muted">Cấp độ</label>
+            <select name="searchCapDo" class="form-select">
+                <option value="">-- Tất cả cấp độ --</option>
+                <option value="Sơ cấp" selected="@(ViewBag.SearchCapDo == "Sơ cấp" ? "selected" : null)">Sơ cấp</option>
+                <option value="Trung cấp" selected="@(ViewBag.SearchCapDo == "Trung cấp" ? "selected" : null)">Trung cấp</option>
+                <option value="Cao cấp" selected="@(ViewBag.SearchCapDo == "Cao cấp" ? "selected" : null)">Cao cấp</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label fw-semibold small text-muted">Từ khóa tìm kiếm</label>
+            <input type="text" name="searchKeyword" value="@ViewBag.SearchKeyword" class="form-control" placeholder="Nhập tên khóa học..." />
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary fw-bold w-100"><i class="fa-solid fa-filter me-1"></i>Lọc</button>
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- LƯỚI KHÓA HỌC -->
+<div class="row g-4">
+    @if (Model != null && Model.Any())
+    {
+        foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card-custom p-4 h-100 d-flex flex-column justify-content-between shadow-sm border-0 position-relative">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">@item.NgoaiNgu</span>
+                            <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">@item.CapDo</span>
+                        </div>
+                        <h4 class="fw-bold mb-2 text-dark">@item.TenKhoaHoc</h4>
+                        <p class="text-muted small mb-3">@item.MoTa</p>
+                    </div>
+
+                    <div>
+                        <div class="p-3 bg-light rounded-3 mb-3 d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">Học phí chuẩn:</span>
+                            <strong class="text-danger fs-5">@item.HocPhi.ToString("N0") đ</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <a asp-action="Details" asp-route-id="@item.MaKhoaHoc" class="btn btn-outline-primary rounded-pill btn-sm px-3 fw-semibold">
+                                Chi tiết & Lớp học <i class="fa-solid fa-arrow-right ms-1"></i>
+                            </a>
+
+                            @if (vaiTro == "Admin")
+                            {
+                                <div class="btn-group">
+                                    <a asp-action="Edit" asp-route-id="@item.MaKhoaHoc" class="btn btn-sm btn-outline-secondary" title="Sửa"><i class="fa-solid fa-pen"></i></a>
+                                    <a asp-action="Delete" asp-route-id="@item.MaKhoaHoc" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="fa-solid fa-trash"></i></a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12 text-center py-5 text-muted">
+            <i class="fa-solid fa-book-open fa-3x mb-3 text-secondary d-block"></i>
+            Không tìm thấy khóa học nào phù hợp.
+        </div>
+    }
+</div>

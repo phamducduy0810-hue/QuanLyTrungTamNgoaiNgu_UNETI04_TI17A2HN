@@ -1,0 +1,52 @@
+@*
+    Họ và tên: Phạm Văn Công
+    Mã sinh viên: 23103100115
+    Nội dung thực hiện: Module 1 - Xóa Khóa học (Admin)
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc
+
+@{
+    ViewData["Title"] = "Xác Nhận Xóa Khóa Học";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card-custom p-4 border-danger border-top border-4">
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-triangle-exclamation fa-4x text-danger mb-2"></i>
+                <h3 class="fw-bold text-danger">XÁC NHẬN XÓA KHÓA HỌC</h3>
+                <p class="text-muted small">Bạn có chắc chắn muốn xóa khóa học này ra khỏi hệ thống?</p>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 mb-4">
+                <h5 class="fw-bold text-primary mb-1">@Model.TenKhoaHoc</h5>
+                <div class="small text-muted mb-2">
+                    <span class="badge bg-primary me-1">@Model.NgoaiNgu</span>
+                    <span class="badge bg-secondary">@Model.CapDo</span>
+                </div>
+                <p class="small text-muted mb-2">@Model.MoTa</p>
+                <div class="fw-bold text-danger">Học phí: @Model.HocPhi.ToString("N0") đ</div>
+            </div>
+
+            @if (Model.LopHocs != null && Model.LopHocs.Any())
+            {
+                <div class="alert alert-warning small mb-4">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    <strong>Cảnh báo:</strong> Khóa học này đang có <strong>@Model.LopHocs.Count lớp học</strong> liên kết. Bạn cần xóa các lớp học trước khi xóa khóa học này.
+                </div>
+            }
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="MaKhoaHoc" />
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-danger fw-bold px-4" @(Model.LopHocs != null && Model.LopHocs.Any() ? "disabled" : "")>
+                        <i class="fa-solid fa-trash me-1"></i>Xác Nhận Xóa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

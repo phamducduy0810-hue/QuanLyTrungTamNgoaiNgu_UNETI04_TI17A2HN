@@ -1,0 +1,102 @@
+@*
+    Họ và tên: Phạm Văn Công
+    Mã sinh viên: 23103100115
+    Nội dung thực hiện: Module 1 - Chi tiết Khóa học & Các lớp học liên kết
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc
+
+@{
+    ViewData["Title"] = "Chi Tiết Khóa Học - " + Model.TenKhoaHoc;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="fa-solid fa-arrow-left me-1"></i>Quay lại danh sách khóa học</a>
+</div>
+
+<div class="card-custom p-4 p-md-5 mb-4 border-0 shadow-sm">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-primary px-3 py-1 rounded-pill">@Model.NgoaiNgu</span>
+                <span class="badge bg-secondary px-3 py-1 rounded-pill">@Model.CapDo</span>
+            </div>
+            <h2 class="fw-extrabold text-primary mb-3">@Model.TenKhoaHoc</h2>
+            <p class="lead text-muted mb-4">@Model.MoTa</p>
+            <div class="d-flex align-items-center gap-4">
+                <div>
+                    <span class="text-muted small d-block">Học phí niêm yết:</span>
+                    <strong class="text-danger fs-3">@Model.HocPhi.ToString("N0") đ</strong>
+                </div>
+                <div>
+                    <span class="text-muted small d-block">Số lớp đã mở:</span>
+                    <strong class="text-dark fs-4">@(Model.LopHocs?.Count ?? 0) lớp</strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 text-center mt-4 mt-lg-0">
+            <i class="fa-solid fa-book-bookmark fa-8x text-primary opacity-25"></i>
+        </div>
+    </div>
+</div>
+
+<!-- DANH SÁCH LỚP HỌC THUỘC KHÓA -->
+<div class="card-custom p-4 shadow-sm">
+    <h4 class="fw-bold text-primary mb-3"><i class="fa-solid fa-chalkboard-user me-2"></i>Danh Sách Lớp Học Mở Thuộc Khóa Này</h4>
+    
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Mã Lớp</th>
+                    <th>Tên Lớp Học</th>
+                    <th>Khai Giảng</th>
+                    <th>Lịch Học & Phòng</th>
+                    <th>Số Lượng Tối Đa</th>
+                    <th>Trạng Thái</th>
+                    <th class="text-end">Đăng Ký</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.LopHocs != null && Model.LopHocs.Any())
+                {
+                    foreach (var lop in Model.LopHocs)
+                    {
+                        <tr>
+                            <td class="fw-bold text-secondary">#LH@lop.MaLop.ToString("D3")</td>
+                            <td><strong class="text-dark">@lop.TenLop</strong></td>
+                            <td>@lop.NgayKhaiGiang.ToString("dd/MM/yyyy")</td>
+                            <td class="small">
+                                <div><i class="fa-solid fa-clock text-warning me-1"></i>@lop.LichHoc</div>
+                                <div class="text-muted"><i class="fa-solid fa-building me-1"></i>Phòng @lop.PhongHoc</div>
+                            </td>
+                            <td>@lop.SoLuongToiDa học viên</td>
+                            <td>
+                                @if (lop.TrangThai == "Đang tuyển sinh")
+                                {
+                                    <span class="badge bg-success px-3 py-1 rounded-pill">Đang tuyển sinh</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-3 py-1 rounded-pill">@lop.TrangThai</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-controller="DangKyHoc" asp-action="DangKyClass" asp-route-id="@lop.MaLop" class="btn btn-sm btn-warning fw-bold text-dark rounded-pill px-3">
+                                    <i class="fa-solid fa-user-plus me-1"></i>Đăng ký
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            Hiện chưa có lớp học nào mở thuộc khóa học này.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

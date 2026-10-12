@@ -1,0 +1,75 @@
+@*
+    Họ và tên: Phạm Văn Công
+    Mã sinh viên: 23103100115
+    Nội dung thực hiện: Module 1 - Chỉnh sửa thông tin Khóa học (Admin)
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Khóa Học";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-custom p-4">
+            <div class="d-flex align-items-center mb-4">
+                <i class="fa-solid fa-pen-to-square fa-2x text-primary me-3"></i>
+                <div>
+                    <h3 class="fw-bold mb-0">Chỉnh Sửa Khóa Học</h3>
+                    <p class="text-muted small mb-0">Cập nhật thông tin chi tiết cho khóa học mã #KH@Model.MaKhoaHoc.ToString("D3")</p>
+                </div>
+            </div>
+
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="MaKhoaHoc" />
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="TenKhoaHoc" class="form-label fw-semibold">Tên Khóa Học <span class="text-danger">*</span></label>
+                        <input asp-for="TenKhoaHoc" class="form-control" />
+                        <span asp-validation-for="TenKhoaHoc" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NgoaiNgu" class="form-label fw-semibold">Ngoại Ngữ <span class="text-danger">*</span></label>
+                        <select asp-for="NgoaiNgu" class="form-select">
+                            <option value="Tiếng Anh">Tiếng Anh</option>
+                            <option value="Tiếng Trung">Tiếng Trung</option>
+                            <option value="Tiếng Nhật">Tiếng Nhật</option>
+                            <option value="Tiếng Hàn">Tiếng Hàn</option>
+                        </select>
+                        <span asp-validation-for="NgoaiNgu" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="CapDo" class="form-label fw-semibold">Cấp Độ <span class="text-danger">*</span></label>
+                        <select asp-for="CapDo" class="form-select">
+                            <option value="Sơ cấp">Sơ cấp</option>
+                            <option value="Trung cấp">Trung cấp</option>
+                            <option value="Cao cấp">Cao cấp</option>
+                        </select>
+                        <span asp-validation-for="CapDo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="HocPhi" class="form-label fw-semibold">Học Phí Niêm Yết (VNĐ) <span class="text-danger">*</span></label>
+                        <input asp-for="HocPhi" type="number" step="100000" class="form-control" />
+                        <span asp-validation-for="HocPhi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="MoTa" class="form-label fw-semibold">Mô Tả Nội Dung Khóa Học</label>
+                        <textarea asp-for="MoTa" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="MoTa" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary fw-bold px-4"><i class="fa-solid fa-floppy-disk me-1"></i>Lưu Thay Đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
