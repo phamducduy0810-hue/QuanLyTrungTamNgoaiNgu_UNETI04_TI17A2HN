@@ -1,7 +1,6 @@
-// Họ và tên: Phạm Văn Công
-// Mã sinh viên: 23103100115
-// Nội dung thực hiện: Khởi tạo dữ liệu mẫu (Seed Data) cho ApplicationDbContext
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models;
 
@@ -11,172 +10,319 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data
     {
         public static void Initialize(ApplicationDbContext context)
         {
-            context.Database.Migrate();
-            if (context.TaiKhoans.Any())
+            // Tự động tạo cơ sở dữ liệu nếu chưa có
+            context.Database.EnsureCreated();
+
+            // Nếu đã có lớp học thì không seed lại
+            if (context.LopHocs.Any())
             {
                 return;
             }
 
-            // 1. Tạo tài khoản mẫu
-            var admin1 = new TaiKhoan
+            // 1. Seed Khóa học (Tối thiểu 5 khóa học)
+            var khoaHocs = new List<KhoaHoc>
+            {
+                new KhoaHoc
+                {
+                    TenKhoaHoc = "Tiếng Anh Giao Tiếp Cơ Bản (A1)",
+                    NgoaiNgu = "Tiếng Anh",
+                    CapDo = "A1",
+                    HocPhi = 2500000,
+                    SoBuoi = 24,
+                    MoTa = "Khóa học dành cho người mất gốc, rèn luyện phát âm chuẩn IPA và phản xạ giao tiếp cơ bản hàng ngày.",
+                    TrangThai = true
+                },
+                new KhoaHoc
+                {
+                    TenKhoaHoc = "Luyện Thi IELTS Chuyên Sâu 6.5+",
+                    NgoaiNgu = "Tiếng Anh",
+                    CapDo = "B2 - C1",
+                    HocPhi = 5500000,
+                    SoBuoi = 36,
+                    MoTa = "Rèn luyện 4 kỹ năng Nghe - Nói - Đọc - Viết theo format đề thi IELTS quốc tế chuẩn Cambridge.",
+                    TrangThai = true
+                },
+                new KhoaHoc
+                {
+                    TenKhoaHoc = "Tiếng Trung Sơ Cấp (HSK 1 - 2)",
+                    NgoaiNgu = "Tiếng Trung",
+                    CapDo = "HSK 2",
+                    HocPhi = 2800000,
+                    SoBuoi = 30,
+                    MoTa = "Khóa học nhập môn tiếng Trung: bảng chữ cái Pinyin, quy tắc viết chữ Hán và các hội thoại sinh hoạt thông dụng.",
+                    TrangThai = true
+                },
+                new KhoaHoc
+                {
+                    TenKhoaHoc = "Tiếng Trung Thương Mại (HSK 4 - 5)",
+                    NgoaiNgu = "Tiếng Trung",
+                    CapDo = "HSK 4",
+                    HocPhi = 4200000,
+                    SoBuoi = 32,
+                    MoTa = "Khóa học chuyên sâu từ vựng, ngữ pháp thương mại, đàm phán hợp đồng và giao tiếp công sở tiếng Trung.",
+                    TrangThai = true
+                },
+                new KhoaHoc
+                {
+                    TenKhoaHoc = "Tiếng Nhật Sơ Cấp N5 Cấp Tốc",
+                    NgoaiNgu = "Tiếng Nhật",
+                    CapDo = "N5",
+                    HocPhi = 3200000,
+                    SoBuoi = 36,
+                    MoTa = "Làm quen với 2 bảng chữ cái Hiragana, Katakana, chữ Hán cơ bản và ngữ pháp sơ cấp chuẩn bị cho kỳ thi JLPT N5.",
+                    TrangThai = true
+                },
+                new KhoaHoc
+                {
+                    TenKhoaHoc = "Tiếng Hàn Giao Tiếp & TOPIK I",
+                    NgoaiNgu = "Tiếng Hàn",
+                    CapDo = "TOPIK 1",
+                    HocPhi = 2900000,
+                    SoBuoi = 28,
+                    MoTa = "Học bảng chữ cái Hangul, cách phát âm, ngữ pháp và từ vựng chuẩn bị cho kỳ thi TOPIK level 1 và 2.",
+                    TrangThai = true
+                }
+            };
+
+            context.KhoaHocs.AddRange(khoaHocs);
+            context.SaveChanges();
+
+            // 2. Seed Lớp học (Tối thiểu 10 lớp học đa dạng để test lọc, sắp xếp, phân trang)
+            var lopHocs = new List<LopHoc>
+            {
+                new LopHoc
+                {
+                    TenLop = "TAGT-A1-K01",
+                    MaKhoaHoc = khoaHocs[0].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(5),
+                    LichHoc = "T2 - T4 - T6 (18:00 - 20:00)",
+                    PhongHoc = "Phòng A101",
+                    SoLuongToiDa = 20,
+                    HocPhi = 2500000,
+                    TrangThai = "Đang tuyển sinh"
+                },
+                new LopHoc
+                {
+                    TenLop = "TAGT-A1-K02",
+                    MaKhoaHoc = khoaHocs[0].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(15),
+                    LichHoc = "T3 - T5 - T7 (19:30 - 21:30)",
+                    PhongHoc = "Phòng A102",
+                    SoLuongToiDa = 25,
+                    HocPhi = 2500000,
+                    TrangThai = "Sắp mở"
+                },
+                new LopHoc
+                {
+                    TenLop = "IELTS-65-K01",
+                    MaKhoaHoc = khoaHocs[1].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(10),
+                    LichHoc = "T2 - T4 - T6 (19:30 - 21:30)",
+                    PhongHoc = "Phòng B201",
+                    SoLuongToiDa = 15,
+                    HocPhi = 5500000,
+                    TrangThai = "Đang tuyển sinh"
+                },
+                new LopHoc
+                {
+                    TenLop = "IELTS-65-K02",
+                    MaKhoaHoc = khoaHocs[1].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(-20),
+                    LichHoc = "T7 - CN (14:00 - 17:00)",
+                    PhongHoc = "Phòng B202",
+                    SoLuongToiDa = 15,
+                    HocPhi = 5500000,
+                    TrangThai = "Đang học"
+                },
+                new LopHoc
+                {
+                    TenLop = "TT-HSK2-K01",
+                    MaKhoaHoc = khoaHocs[2].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(7),
+                    LichHoc = "T3 - T5 - T7 (18:00 - 20:00)",
+                    PhongHoc = "Phòng C301",
+                    SoLuongToiDa = 20,
+                    HocPhi = 2800000,
+                    TrangThai = "Đang tuyển sinh"
+                },
+                new LopHoc
+                {
+                    TenLop = "TT-HSK2-K02",
+                    MaKhoaHoc = khoaHocs[2].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(-60),
+                    LichHoc = "T2 - T4 - T6 (18:00 - 20:00)",
+                    PhongHoc = "Phòng C302",
+                    SoLuongToiDa = 18,
+                    HocPhi = 2800000,
+                    TrangThai = "Đã kết thúc"
+                },
+                new LopHoc
+                {
+                    TenLop = "TT-TM-K01",
+                    MaKhoaHoc = khoaHocs[3].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(20),
+                    LichHoc = "T7 - CN (08:30 - 11:30)",
+                    PhongHoc = "Phòng C303",
+                    SoLuongToiDa = 15,
+                    HocPhi = 4200000,
+                    TrangThai = "Sắp mở"
+                },
+                new LopHoc
+                {
+                    TenLop = "TN-N5-K01",
+                    MaKhoaHoc = khoaHocs[4].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(3),
+                    LichHoc = "T2 - T4 - T6 (18:00 - 20:00)",
+                    PhongHoc = "Phòng D401",
+                    SoLuongToiDa = 20,
+                    HocPhi = 3200000,
+                    TrangThai = "Đang tuyển sinh"
+                },
+                new LopHoc
+                {
+                    TenLop = "TN-N5-K02",
+                    MaKhoaHoc = khoaHocs[4].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(-15),
+                    LichHoc = "T3 - T5 - T7 (19:30 - 21:30)",
+                    PhongHoc = "Phòng D402",
+                    SoLuongToiDa = 20,
+                    HocPhi = 3200000,
+                    TrangThai = "Đang học"
+                },
+                new LopHoc
+                {
+                    TenLop = "TH-TOPIK-K01",
+                    MaKhoaHoc = khoaHocs[5].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(8),
+                    LichHoc = "T2 - T4 - T6 (19:30 - 21:30)",
+                    PhongHoc = "Phòng E501",
+                    SoLuongToiDa = 22,
+                    HocPhi = 2900000,
+                    TrangThai = "Đang tuyển sinh"
+                },
+                new LopHoc
+                {
+                    TenLop = "TH-TOPIK-K02",
+                    MaKhoaHoc = khoaHocs[5].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(25),
+                    LichHoc = "T7 - CN (18:00 - 21:00)",
+                    PhongHoc = "Phòng E502",
+                    SoLuongToiDa = 20,
+                    HocPhi = 2900000,
+                    TrangThai = "Sắp mở"
+                },
+                new LopHoc
+                {
+                    TenLop = "TAGT-A1-K03",
+                    MaKhoaHoc = khoaHocs[0].MaKhoaHoc,
+                    NgayKhaiGiang = DateTime.Today.AddDays(-45),
+                    LichHoc = "T2 - T4 - T6 (19:30 - 21:30)",
+                    PhongHoc = "Phòng A103",
+                    SoLuongToiDa = 20,
+                    HocPhi = 2500000,
+                    TrangThai = "Đã kết thúc"
+                }
+            };
+
+            context.LopHocs.AddRange(lopHocs);
+            context.SaveChanges();
+
+            // 3. Seed Tài khoản Admin và Học viên
+            var adminTk = new TaiKhoan
             {
                 TenDangNhap = "admin",
-                MatKhau = "123456",
-                HoTen = "Quản Trị Viên Hùng",
+                MatKhau = "admin123",
+                HoTen = "Quản Trị Viên Trung Tâm",
                 Email = "admin@uneti.edu.vn",
                 VaiTro = "Admin",
                 TrangThai = true
             };
-
-            var studentTk1 = new TaiKhoan
+            var adminTk2 = new TaiKhoan
             {
-                TenDangNhap = "student1",
-                MatKhau = "123456",
-                HoTen = "Nguyễn Văn Nam",
-                Email = "nam.nv@student.uneti.edu.vn",
-                VaiTro = "HocVien",
+                TenDangNhap = "admin2",
+                MatKhau = "admin123",
+                HoTen = "Phạm Đức Duy (Admin)",
+                Email = "duy.admin@uneti.edu.vn",
+                VaiTro = "Admin",
                 TrangThai = true
             };
-
-            var studentTk2 = new TaiKhoan
-            {
-                TenDangNhap = "student2",
-                MatKhau = "123456",
-                HoTen = "Trần Thị Mai",
-                Email = "mai.tt@student.uneti.edu.vn",
-                VaiTro = "HocVien",
-                TrangThai = true
-            };
-
-            context.TaiKhoans.AddRange(admin1, studentTk1, studentTk2);
+            context.TaiKhoans.AddRange(adminTk, adminTk2);
             context.SaveChanges();
 
-            // 2. Tạo Hồ sơ học viên
-            var hv1 = new HocVien
+            // Tạo 15 tài khoản học viên và hồ sơ học viên tương ứng
+            var studentNames = new[]
             {
-                MaTaiKhoan = studentTk1.MaTaiKhoan,
-                HoTen = studentTk1.HoTen,
-                NgaySinh = new DateTime(2003, 5, 12),
-                GioiTinh = "Nam",
-                SoDienThoai = "0987654321",
-                Email = studentTk1.Email,
-                DiaChi = "Hai Bà Trưng, Hà Nội"
+                ("hocvien01", "Nguyễn Văn An", "Nam", "0912345601", "an.nv@gmail.com", "Hà Nội"),
+                ("hocvien02", "Trần Thị Bình", "Nữ", "0912345602", "binh.tt@gmail.com", "Bắc Ninh"),
+                ("hocvien03", "Lê Hoàng Cường", "Nam", "0912345603", "cuong.lh@gmail.com", "Hải Phòng"),
+                ("hocvien04", "Phạm Thùy Dung", "Nữ", "0912345604", "dung.pt@gmail.com", "Nam Định"),
+                ("hocvien05", "Đỗ Minh Đức", "Nam", "0912345605", "duc.dm@gmail.com", "Thái Bình"),
+                ("hocvien06", "Vũ Mai Hoa", "Nữ", "0912345606", "hoa.vm@gmail.com", "Hà Nam"),
+                ("hocvien07", "Hoàng Tuấn Kiên", "Nam", "0912345607", "kien.ht@gmail.com", "Hưng Yên"),
+                ("hocvien08", "Ngô Bích Lan", "Nữ", "0912345608", "lan.nb@gmail.com", "Vĩnh Phúc"),
+                ("hocvien09", "Đặng Quang Minh", "Nam", "0912345609", "minh.dq@gmail.com", "Hà Nội"),
+                ("hocvien10", "Bùi Kim Ngân", "Nữ", "0912345610", "ngan.bk@gmail.com", "Hải Dương"),
+                ("hocvien11", "Dương Nhật Nam", "Nam", "0912345611", "nam.dn@gmail.com", "Ninh Bình"),
+                ("hocvien12", "Lý Thanh Phương", "Nữ", "0912345612", "phuong.lt@gmail.com", "Phú Thọ"),
+                ("hocvien13", "Tạ Hồng Quân", "Nam", "0912345613", "quan.th@gmail.com", "Thái Nguyên"),
+                ("hocvien14", "Đinh Thu Thảo", "Nữ", "0912345614", "thao.dt@gmail.com", "Hà Nội"),
+                ("hocvien15", "Vương Quốc Việt", "Nam", "0912345615", "viet.vq@gmail.com", "Bắc Giang")
             };
 
-            var hv2 = new HocVien
+            var hocViens = new List<HocVien>();
+            int birthYear = 2002;
+            foreach (var s in studentNames)
             {
-                MaTaiKhoan = studentTk2.MaTaiKhoan,
-                HoTen = studentTk2.HoTen,
-                NgaySinh = new DateTime(2004, 8, 20),
-                GioiTinh = "Nữ",
-                SoDienThoai = "0912345678",
-                Email = studentTk2.Email,
-                DiaChi = "Hoàng Mai, Hà Nội"
-            };
+                var tk = new TaiKhoan
+                {
+                    TenDangNhap = s.Item1,
+                    MatKhau = "123456",
+                    HoTen = s.Item2,
+                    Email = s.Item5,
+                    VaiTro = "HocVien",
+                    TrangThai = true
+                };
+                context.TaiKhoans.Add(tk);
+                context.SaveChanges();
 
-            context.HocViens.AddRange(hv1, hv2);
+                var hv = new HocVien
+                {
+                    MaTaiKhoan = tk.MaTaiKhoan,
+                    HoTen = s.Item2,
+                    NgaySinh = new DateTime(birthYear, (hocViens.Count % 12) + 1, 15),
+                    GioiTinh = s.Item3,
+                    SoDienThoai = s.Item4,
+                    Email = s.Item5,
+                    DiaChi = s.Item6
+                };
+                hocViens.Add(hv);
+            }
+
+            context.HocViens.AddRange(hocViens);
             context.SaveChanges();
 
-            // 3. Tạo Khóa học mẫu
-            var kh1 = new KhoaHoc
+            // 4. Seed Đăng ký học (Tối thiểu 15-20 lượt đăng ký)
+            var dangKyList = new List<DangKyHoc>
             {
-                TenKhoaHoc = "Tiếng Anh Giao Tiếp Căn Bản",
-                NgoaiNgu = "Tiếng Anh",
-                CapDo = "Sơ cấp",
-                HocPhi = 2500000m,
-                MoTa = "Chương trình dành cho người bắt đầu, cải thiện phản xạ phát âm và giao tiếp hằng ngày."
+                new DangKyHoc { MaHocVien = hocViens[0].MaHocVien, MaLop = lopHocs[0].MaLop, NgayDangKy = DateTime.Today.AddDays(-5), HocPhi = lopHocs[0].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[1].MaHocVien, MaLop = lopHocs[0].MaLop, NgayDangKy = DateTime.Today.AddDays(-4), HocPhi = lopHocs[0].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[2].MaHocVien, MaLop = lopHocs[0].MaLop, NgayDangKy = DateTime.Today.AddDays(-3), HocPhi = lopHocs[0].HocPhi, TrangThai = "Chờ xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[3].MaHocVien, MaLop = lopHocs[2].MaLop, NgayDangKy = DateTime.Today.AddDays(-4), HocPhi = lopHocs[2].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[4].MaHocVien, MaLop = lopHocs[2].MaLop, NgayDangKy = DateTime.Today.AddDays(-2), HocPhi = lopHocs[2].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[5].MaHocVien, MaLop = lopHocs[2].MaLop, NgayDangKy = DateTime.Today.AddDays(-1), HocPhi = lopHocs[2].HocPhi, TrangThai = "Chờ xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[6].MaHocVien, MaLop = lopHocs[4].MaLop, NgayDangKy = DateTime.Today.AddDays(-3), HocPhi = lopHocs[4].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[7].MaHocVien, MaLop = lopHocs[4].MaLop, NgayDangKy = DateTime.Today.AddDays(-2), HocPhi = lopHocs[4].HocPhi, TrangThai = "Chờ xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[8].MaHocVien, MaLop = lopHocs[7].MaLop, NgayDangKy = DateTime.Today.AddDays(-2), HocPhi = lopHocs[7].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[9].MaHocVien, MaLop = lopHocs[7].MaLop, NgayDangKy = DateTime.Today.AddDays(-1), HocPhi = lopHocs[7].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[10].MaHocVien, MaLop = lopHocs[9].MaLop, NgayDangKy = DateTime.Today.AddDays(-3), HocPhi = lopHocs[9].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[11].MaHocVien, MaLop = lopHocs[9].MaLop, NgayDangKy = DateTime.Today.AddDays(-1), HocPhi = lopHocs[9].HocPhi, TrangThai = "Chờ xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[12].MaHocVien, MaLop = lopHocs[0].MaLop, NgayDangKy = DateTime.Today.AddDays(-2), HocPhi = lopHocs[0].HocPhi, TrangThai = "Đã hủy" },
+                new DangKyHoc { MaHocVien = hocViens[13].MaHocVien, MaLop = lopHocs[3].MaLop, NgayDangKy = DateTime.Today.AddDays(-25), HocPhi = lopHocs[3].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[14].MaHocVien, MaLop = lopHocs[8].MaLop, NgayDangKy = DateTime.Today.AddDays(-20), HocPhi = lopHocs[8].HocPhi, TrangThai = "Đã xác nhận" },
+                new DangKyHoc { MaHocVien = hocViens[0].MaHocVien, MaLop = lopHocs[7].MaLop, NgayDangKy = DateTime.Today.AddDays(-1), HocPhi = lopHocs[7].HocPhi, TrangThai = "Chờ xác nhận" }
             };
 
-            var kh2 = new KhoaHoc
-            {
-                TenKhoaHoc = "Luyện Thi IELTS 6.5+",
-                NgoaiNgu = "Tiếng Anh",
-                CapDo = "Trung cấp",
-                HocPhi = 5800000m,
-                MoTa = "Khóa học chiến thuật chuyên sâu 4 kỹ năng Nghe, Nói, Đọc, Viết đạt mục tiêu IELTS 6.5."
-            };
-
-            var kh3 = new KhoaHoc
-            {
-                TenKhoaHoc = "Tiếng Trung HSK 3 Chuẩn Quốc Tế",
-                NgoaiNgu = "Tiếng Trung",
-                CapDo = "Trung cấp",
-                HocPhi = 3200000m,
-                MoTa = "Trang bị 600 từ vựng HSK 3, viết chữ Hán và giao tiếp tự tin cùng giáo viên bản ngữ."
-            };
-
-            var kh4 = new KhoaHoc
-            {
-                TenKhoaHoc = "Tiếng Nhật JLPT N5 Bứt Phá",
-                NgoaiNgu = "Tiếng Nhật",
-                CapDo = "Sơ cấp",
-                HocPhi = 2900000m,
-                MoTa = "Học bảng chữ cái Hiragana, Katakana và 800 từ vựng căn bản vượt qua kỳ thi N5."
-            };
-
-            context.KhoaHocs.AddRange(kh1, kh2, kh3, kh4);
-            context.SaveChanges();
-
-            // 4. Tạo Lớp học mẫu
-            var lop1 = new LopHoc
-            {
-                MaKhoaHoc = kh1.MaKhoaHoc,
-                TenLop = "ENG-BASIC-01",
-                NgayKhaiGiang = DateTime.Now.AddDays(10),
-                LichHoc = "Tối Thứ 2, 4, 6 (18h30 - 20h30)",
-                PhongHoc = "P.402A - Cơ sở Minh Khai",
-                SoLuongToiDa = 25,
-                HocPhi = 2500000m,
-                TrangThai = "Đang tuyển sinh"
-            };
-
-            var lop2 = new LopHoc
-            {
-                MaKhoaHoc = kh2.MaKhoaHoc,
-                TenLop = "IELTS-65-K02",
-                NgayKhaiGiang = DateTime.Now.AddDays(15),
-                LichHoc = "Chiều Thứ 7, Chủ Nhật (14h00 - 17h00)",
-                PhongHoc = "P.501B - Cơ sở Lĩnh Nam",
-                SoLuongToiDa = 20,
-                HocPhi = 5800000m,
-                TrangThai = "Đang tuyển sinh"
-            };
-
-            var lop3 = new LopHoc
-            {
-                MaKhoaHoc = kh3.MaKhoaHoc,
-                TenLop = "HSK3-CHINESE-01",
-                NgayKhaiGiang = DateTime.Now.AddDays(5),
-                LichHoc = "Tối Thứ 3, 5, 7 (19h00 - 21h00)",
-                PhongHoc = "P.303A - Cơ sở Minh Khai",
-                SoLuongToiDa = 20,
-                HocPhi = 3200000m,
-                TrangThai = "Đang tuyển sinh"
-            };
-
-            context.LopHocs.AddRange(lop1, lop2, lop3);
-            context.SaveChanges();
-
-            // 5. Tạo Đơn đăng ký học mẫu
-            var dk1 = new DangKyHoc
-            {
-                MaHocVien = hv1.MaHocVien,
-                MaLop = lop1.MaLop,
-                NgayDangKy = DateTime.Now.AddDays(-2),
-                HocPhi = lop1.HocPhi,
-                TrangThai = "Đã xác nhận"
-            };
-
-            var dk2 = new DangKyHoc
-            {
-                MaHocVien = hv2.MaHocVien,
-                MaLop = lop2.MaLop,
-                NgayDangKy = DateTime.Now.AddDays(-1),
-                HocPhi = lop2.HocPhi,
-                TrangThai = "Chờ xác nhận"
-            };
-
-            context.DangKyHocs.AddRange(dk1, dk2);
+            context.DangKyHocs.AddRange(dangKyList);
             context.SaveChanges();
         }
     }

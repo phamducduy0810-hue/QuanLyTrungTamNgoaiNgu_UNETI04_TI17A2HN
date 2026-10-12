@@ -56,6 +56,16 @@ app.UseSession();
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "lophoc_alias",
+    pattern: "LopHoc/{action=Index}/{id?}",
+    defaults: new { controller = "LopHocs" });
+
+app.MapControllerRoute(
+    name: "hocvien_alias",
+    pattern: "HocVien/{action=Index}/{id?}",
+    defaults: new { controller = "HocViens" });
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 

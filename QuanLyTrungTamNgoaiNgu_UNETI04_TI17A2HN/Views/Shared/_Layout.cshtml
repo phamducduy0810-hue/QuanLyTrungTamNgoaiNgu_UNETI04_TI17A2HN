@@ -171,13 +171,13 @@
                         <a class="nav-link" asp-controller="KhoaHoc" asp-action="Index"><i class="fa-solid fa-book-open me-1"></i> Khóa học</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="LopHoc" asp-action="Index"><i class="fa-solid fa-chalkboard-user me-1"></i> Lớp học</a>
+                        <a class="nav-link" asp-controller="LopHocs" asp-action="Index"><i class="fa-solid fa-chalkboard-user me-1"></i> Lớp học</a>
                     </li>
 
                     @if (vaiTro == "HocVien")
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-warning fw-bold" asp-controller="DangKyHoc" asp-action="LichSuDangKy">
+                            <a class="nav-link text-warning fw-bold" asp-controller="DangKyHoc" asp-action="LichSu">
                                 <i class="fa-solid fa-clock-rotate-left me-1"></i> Lịch sử đăng ký
                             </a>
                         </li>
@@ -193,10 +193,10 @@
                                 <li><a class="dropdown-item py-2" asp-controller="ThongKe" asp-action="Dashboard"><i class="fa-solid fa-chart-line me-2 text-primary"></i> Dashboard</a></li>
                                 <li><a class="dropdown-item py-2" asp-controller="ThongKe" asp-action="Index"><i class="fa-solid fa-chart-pie me-2 text-success"></i> Thống kê báo cáo</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item py-2" asp-controller="DangKyHoc" asp-action="Index"><i class="fa-solid fa-clipboard-check me-2 text-warning"></i> Quản lý Đăng ký học</a></li>
+                                <li><a class="dropdown-item py-2" asp-controller="QuanLyDangKy" asp-action="Index"><i class="fa-solid fa-clipboard-check me-2 text-warning"></i> Quản lý Đăng ký học</a></li>
                                 <li><a class="dropdown-item py-2" asp-controller="KhoaHoc" asp-action="Index"><i class="fa-solid fa-book me-2 text-info"></i> Quản lý Khóa học</a></li>
-                                <li><a class="dropdown-item py-2" asp-controller="LopHoc" asp-action="Index"><i class="fa-solid fa-list-check me-2 text-primary"></i> Quản lý Lớp học</a></li>
-                                <li><a class="dropdown-item py-2" asp-controller="HocVien" asp-action="Index"><i class="fa-solid fa-users me-2 text-danger"></i> Quản lý Học viên</a></li>
+                                <li><a class="dropdown-item py-2" asp-controller="LopHocs" asp-action="Index"><i class="fa-solid fa-list-check me-2 text-primary"></i> Quản lý Lớp học</a></li>
+                                <li><a class="dropdown-item py-2" asp-controller="HocViens" asp-action="Index"><i class="fa-solid fa-users me-2 text-danger"></i> Quản lý Học viên</a></li>
                                 <li><a class="dropdown-item py-2" asp-controller="TaiKhoan" asp-action="Index"><i class="fa-solid fa-user-gear me-2 text-secondary"></i> Quản lý Tài khoản</a></li>
                             </ul>
                         </li>

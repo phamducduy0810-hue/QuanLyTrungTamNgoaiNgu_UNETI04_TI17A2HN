@@ -143,5 +143,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
             return View(danhSach);
         }
+
+        // GET: DangKyHoc/LichSuDangKy (Hỗ trợ URL alias)
+        [HttpGet]
+        public Task<IActionResult> LichSuDangKy() => LichSu();
     }
 }

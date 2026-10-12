@@ -21,6 +21,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models
         public string TenLop { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng chọn khóa học")]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn khóa học")]
         [Display(Name = "Khóa học")]
         public int MaKhoaHoc { get; set; }
 

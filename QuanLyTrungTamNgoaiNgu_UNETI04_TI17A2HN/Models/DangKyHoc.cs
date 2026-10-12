@@ -19,7 +19,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models
 
         [Required]
         public int MaLop { get; set; }
-        [ForeignKey("MaLop")]
+        [ForeignKey("MaLop")] 
         public virtual LopHoc? LopHoc { get; set; }
 
         [Required]
