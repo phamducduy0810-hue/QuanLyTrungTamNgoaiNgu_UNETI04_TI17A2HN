@@ -1,5 +1,10 @@
+@model IEnumerable<QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc>
+
 @{
     ViewData["Title"] = "Trang Chủ - Trung Tâm Ngoại Ngữ UNETI";
+    int totalKH = ViewBag.TotalKhoaHoc ?? 5;
+    int totalLH = ViewBag.TotalLopHoc ?? 10;
+    int totalHV = ViewBag.TotalHocVien ?? 500;
 }
 
 <!-- HERO BANNER -->
@@ -31,21 +36,21 @@
     <div class="col-md-4">
         <div class="card-custom p-4 text-center border-start border-primary border-4">
             <div class="text-primary mb-2"><i class="fa-solid fa-graduation-cap fa-3x"></i></div>
-            <h2 class="fw-extrabold mb-1">5+</h2>
+            <h2 class="fw-extrabold mb-1">@(totalKH > 0 ? totalKH.ToString() + "+" : "5+")</h2>
             <p class="text-muted fw-semibold mb-0">Khóa Học Đa Dạng</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card-custom p-4 text-center border-start border-success border-4">
             <div class="text-success mb-2"><i class="fa-solid fa-chalkboard-user fa-3x"></i></div>
-            <h2 class="fw-extrabold mb-1">10+</h2>
+            <h2 class="fw-extrabold mb-1">@(totalLH > 0 ? totalLH.ToString() + "+" : "10+")</h2>
             <p class="text-muted fw-semibold mb-0">Lớp Học Mở Thường Xuyên</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card-custom p-4 text-center border-start border-warning border-4">
             <div class="text-warning mb-2"><i class="fa-solid fa-users fa-3x"></i></div>
-            <h2 class="fw-extrabold mb-1">500+</h2>
+            <h2 class="fw-extrabold mb-1">@(totalHV > 0 ? totalHV.ToString() + "+" : "15+")</h2>
             <p class="text-muted fw-semibold mb-0">Học Viên Tin Tưởng</p>
         </div>
     </div>
@@ -61,91 +66,80 @@
 </div>
 
 <div class="row g-4 mb-5">
-    <div class="col-md-6 col-lg-3">
-        <div class="card-custom h-100 p-4 d-flex flex-column justify-content-between border-0 shadow-sm">
-            <div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">Tiếng Anh</span>
-                    <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">Sơ cấp</span>
-                </div>
-                <h5 class="fw-bold mb-2">Tiếng Anh Giao Tiếp Căn Bản</h5>
-                <p class="text-muted small mb-3">Chương trình cải thiện phản xạ phát âm chuẩn và giao tiếp hằng ngày.</p>
-            </div>
-            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small d-block">Học phí:</span>
-                    <strong class="text-danger fs-5">2,500,000 đ</strong>
-                </div>
-                <a class="btn btn-sm btn-primary rounded-pill px-3" asp-controller="KhoaHoc" asp-action="Index">
-                    Xem Chi Tiết
-                </a>
-            </div>
-        </div>
-    </div>
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var item in Model)
+        {
+            string bgImage = "/images/courses/england.jpg";
+            string langBadgeColor = "bg-primary text-white";
+            string iconClass = "fa-solid fa-earth-americas";
 
-    <div class="col-md-6 col-lg-3">
-        <div class="card-custom h-100 p-4 d-flex flex-column justify-content-between border-0 shadow-sm">
-            <div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">Tiếng Anh</span>
-                    <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">Trung cấp</span>
-                </div>
-                <h5 class="fw-bold mb-2">Luyện Thi IELTS 6.5+</h5>
-                <p class="text-muted small mb-3">Chiến thuật 4 kỹ năng Nghe, Nói, Đọc, Viết đạt mục tiêu 6.5+.</p>
-            </div>
-            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small d-block">Học phí:</span>
-                    <strong class="text-danger fs-5">5,800,000 đ</strong>
-                </div>
-                <a class="btn btn-sm btn-primary rounded-pill px-3" asp-controller="KhoaHoc" asp-action="Index">
-                    Xem Chi Tiết
-                </a>
-            </div>
-        </div>
-    </div>
+            if (item.NgoaiNgu.Contains("Nhật"))
+            {
+                bgImage = "/images/courses/japan.jpg";
+                langBadgeColor = "bg-danger text-white";
+                iconClass = "fa-solid fa-sun";
+            }
+            else if (item.NgoaiNgu.Contains("Trung"))
+            {
+                bgImage = "/images/courses/china.jpg";
+                langBadgeColor = "bg-danger text-white";
+                iconClass = "fa-solid fa-language";
+            }
+            else if (item.NgoaiNgu.Contains("Hàn"))
+            {
+                bgImage = "/images/courses/korea.jpg";
+                langBadgeColor = "bg-success text-white";
+                iconClass = "fa-solid fa-globe";
+            }
+            else
+            {
+                bgImage = "/images/courses/england.jpg";
+                langBadgeColor = "bg-primary text-white";
+                iconClass = "fa-solid fa-earth-americas";
+            }
 
-    <div class="col-md-6 col-lg-3">
-        <div class="card-custom h-100 p-4 d-flex flex-column justify-content-between border-0 shadow-sm">
-            <div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">Tiếng Trung</span>
-                    <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">Trung cấp</span>
-                </div>
-                <h5 class="fw-bold mb-2">Tiếng Trung HSK 3</h5>
-                <p class="text-muted small mb-3">Trang bị 600 từ vựng HSK 3 và viết chữ Hán tự tin.</p>
-            </div>
-            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small d-block">Học phí:</span>
-                    <strong class="text-danger fs-5">3,200,000 đ</strong>
-                </div>
-                <a class="btn btn-sm btn-primary rounded-pill px-3" asp-controller="KhoaHoc" asp-action="Index">
-                    Xem Chi Tiết
-                </a>
-            </div>
-        </div>
-    </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card-custom h-100 p-0 border-0 shadow-sm d-flex flex-column overflow-hidden" style="border-radius: 18px; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    <!-- Ảnh nền văn hóa của khóa học -->
+                    <div class="position-relative" style="height: 150px; overflow: hidden;">
+                        <img src="@bgImage" alt="@item.TenKhoaHoc" style="width: 100%; height: 100%; object-fit: cover;" />
+                        <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0.4) 0%, rgba(15,23,42,0.75) 100%);"></div>
+                        <div class="position-absolute top-0 start-0 w-100 p-2 d-flex justify-content-between align-items-center" style="z-index: 2;">
+                            <span class="badge @langBadgeColor px-2 py-1 rounded-pill fw-bold small">
+                                <i class="@iconClass me-1"></i>@item.NgoaiNgu
+                            </span>
+                            <span class="badge bg-white text-dark shadow-sm px-2 py-1 rounded-pill fw-bold small">
+                                @item.CapDo
+                            </span>
+                        </div>
+                    </div>
 
-    <div class="col-md-6 col-lg-3">
-        <div class="card-custom h-100 p-4 d-flex flex-column justify-content-between border-0 shadow-sm">
-            <div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">Tiếng Nhật</span>
-                    <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">Sơ cấp</span>
+                    <div class="p-3 d-flex flex-column justify-content-between flex-grow-1">
+                        <div>
+                            <h5 class="fw-bold mb-2 text-dark" style="font-size: 1.05rem; line-height: 1.35;">@item.TenKhoaHoc</h5>
+                            <p class="text-muted small mb-3" style="min-height: 38px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @(string.IsNullOrEmpty(item.MoTa) ? "Chương trình đào tạo chuẩn quốc tế giúp học viên nâng cao kỹ năng nhanh chóng." : item.MoTa)
+                            </p>
+                        </div>
+                        <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small d-block" style="font-size: 0.75rem;">Học phí:</span>
+                                <strong class="text-danger fw-extrabold fs-5">@item.HocPhi.ToString("N0") <small class="text-muted fs-6">đ</small></strong>
+                            </div>
+                            <a class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold shadow-sm" asp-controller="KhoaHoc" asp-action="Details" asp-route-id="@item.MaKhoaHoc">
+                                Chi Tiết <i class="fa-solid fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <h5 class="fw-bold mb-2">Tiếng Nhật JLPT N5</h5>
-                <p class="text-muted small mb-3">Bảng chữ cái Hiragana, Katakana và 800 từ vựng vượt N5.</p>
             </div>
-            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small d-block">Học phí:</span>
-                    <strong class="text-danger fs-5">2,900,000 đ</strong>
-                </div>
-                <a class="btn btn-sm btn-primary rounded-pill px-3" asp-controller="KhoaHoc" asp-action="Index">
-                    Xem Chi Tiết
-                </a>
-            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12 text-center py-4">
+            <p class="text-muted">Đang cập nhật danh sách khóa học nổi bật...</p>
         </div>
-    </div>
+    }
 </div>

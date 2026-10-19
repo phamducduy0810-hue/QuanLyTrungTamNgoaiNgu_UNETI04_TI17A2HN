@@ -52,10 +52,25 @@
                         <span asp-validation-for="CapDo" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <label asp-for="HocPhi" class="form-label fw-semibold">Học Phí Niêm Yết (VNĐ) <span class="text-danger">*</span></label>
-                        <input asp-for="HocPhi" type="number" step="100000" class="form-control" placeholder="Ví dụ: 2500000" />
+                        <input asp-for="HocPhi" type="number" step="any" min="1" class="form-control" placeholder="Ví dụ: 2500000" />
                         <span asp-validation-for="HocPhi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="SoBuoi" class="form-label fw-semibold">Số Buổi Học <span class="text-danger">*</span></label>
+                        <input asp-for="SoBuoi" type="number" min="1" max="365" class="form-control" placeholder="Ví dụ: 24" />
+                        <span asp-validation-for="SoBuoi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="TrangThai" class="form-label fw-semibold">Trạng Thái Khóa Học</label>
+                        <select asp-for="TrangThai" class="form-select">
+                            <option value="true" selected>Đang mở tuyển sinh</option>
+                            <option value="false">Tạm dừng</option>
+                        </select>
+                        <span asp-validation-for="TrangThai" class="text-danger small"></span>
                     </div>
 
                     <div class="col-12">
@@ -73,3 +88,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

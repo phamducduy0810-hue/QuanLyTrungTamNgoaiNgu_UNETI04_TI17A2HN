@@ -1,59 +1,152 @@
 @*
     Họ và tên: Phạm Văn Công
     Mã sinh viên: 23103100115
-    Nội dung thực hiện: Module 1 - Chi tiết Khóa học & Các lớp học liên kết
+    Nội dung thực hiện: Module 1 - Chi tiết Khóa học & Các lớp học liên kết (Thiết kế hiện đại)
 *@
 @model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc
 
 @{
     ViewData["Title"] = "Chi Tiết Khóa Học - " + Model.TenKhoaHoc;
+    var session = Context.Session;
+    var vaiTro = session.GetString("VaiTro");
+    bool isAdmin = (vaiTro == "Admin");
+
+    string iconClass = "fa-solid fa-earth-americas";
+    string bgImage = "/images/courses/england.jpg";
+    string langBadgeColor = "bg-primary text-white";
+
+    if (Model.NgoaiNgu.Contains("Nhật"))
+    {
+        iconClass = "fa-solid fa-sun";
+        bgImage = "/images/courses/japan.jpg";
+        langBadgeColor = "bg-danger text-white";
+    }
+    else if (Model.NgoaiNgu.Contains("Trung"))
+    {
+        iconClass = "fa-solid fa-language";
+        bgImage = "/images/courses/china.jpg";
+        langBadgeColor = "bg-danger text-white";
+    }
+    else if (Model.NgoaiNgu.Contains("Hàn"))
+    {
+        iconClass = "fa-solid fa-globe";
+        bgImage = "/images/courses/korea.jpg";
+        langBadgeColor = "bg-success text-white";
+    }
+    else
+    {
+        iconClass = "fa-solid fa-earth-americas";
+        bgImage = "/images/courses/england.jpg";
+        langBadgeColor = "bg-primary text-white";
+    }
+
+    int soLop = Model.LopHocs?.Count ?? 0;
 }
 
-<div class="mb-4">
-    <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="fa-solid fa-arrow-left me-1"></i>Quay lại danh sách khóa học</a>
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold">
+        <i class="fa-solid fa-arrow-left me-1"></i>Quay lại danh sách khóa học
+    </a>
+
+    @if (isAdmin)
+    {
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.MaKhoaHoc" class="btn btn-warning btn-sm fw-bold rounded-pill px-3">
+                <i class="fa-solid fa-pen-to-square me-1"></i>Chỉnh sửa khóa học
+            </a>
+            <a asp-controller="LopHocs" asp-action="Create" class="btn btn-primary btn-sm fw-bold rounded-pill px-3">
+                <i class="fa-solid fa-plus-circle me-1"></i>Mở lớp mới cho khóa này
+            </a>
+        </div>
+    }
 </div>
 
-<div class="card-custom p-4 p-md-5 mb-4 border-0 shadow-sm">
-    <div class="row align-items-center">
+<!-- COURSE DETAILS HERO CARD WITH CULTURAL BACKGROUND IMAGE -->
+<div class="card-custom p-4 p-md-5 mb-4 border-0 shadow-lg rounded-4 position-relative overflow-hidden text-white" 
+     style="background: linear-gradient(rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.92)), url('@bgImage') center/cover no-repeat; border-left: 6px solid #3b82f6 !important;">
+    <div class="row align-items-center position-relative z-1">
         <div class="col-lg-8">
-            <div class="d-flex align-items-center gap-2 mb-2">
-                <span class="badge bg-primary px-3 py-1 rounded-pill">@Model.NgoaiNgu</span>
-                <span class="badge bg-secondary px-3 py-1 rounded-pill">@Model.CapDo</span>
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                <span class="badge @langBadgeColor px-3 py-2 rounded-pill fw-bold shadow-sm">
+                    <i class="@iconClass me-1"></i>@Model.NgoaiNgu
+                </span>
+                <span class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 px-3 py-2 rounded-pill fw-semibold">
+                    Cấp độ: @Model.CapDo
+                </span>
+                @if (Model.TrangThai)
+                {
+                    <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-semibold shadow-sm">
+                        <i class="fa-solid fa-circle-check text-white me-1"></i>Đang mở tuyển sinh
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary text-white px-3 py-2 rounded-pill">Tạm dừng</span>
+                }
             </div>
-            <h2 class="fw-extrabold text-primary mb-3">@Model.TenKhoaHoc</h2>
-            <p class="lead text-muted mb-4">@Model.MoTa</p>
-            <div class="d-flex align-items-center gap-4">
-                <div>
-                    <span class="text-muted small d-block">Học phí niêm yết:</span>
-                    <strong class="text-danger fs-3">@Model.HocPhi.ToString("N0") đ</strong>
+
+            <h1 class="display-6 fw-extrabold text-white mb-3">@Model.TenKhoaHoc</h1>
+            <p class="lead text-light mb-4" style="line-height: 1.6; opacity: 0.92;">
+                @(string.IsNullOrWhiteSpace(Model.MoTa) ? "Khóa học ngoại ngữ được thiết kế chuẩn quốc tế, giúp phát triển toàn diện kỹ năng phản xạ và ngữ pháp." : Model.MoTa)
+            </p>
+
+            <div class="row g-3">
+                <div class="col-sm-4">
+                    <div class="p-3 bg-white bg-opacity-10 rounded-3 border border-white border-opacity-25" style="backdrop-filter: blur(8px);">
+                        <span class="text-white-50 small d-block mb-1">Học phí niêm yết:</span>
+                        <strong class="text-warning fs-4 fw-extrabold">@Model.HocPhi.ToString("N0") <small class="fs-6 text-white-50">đ</small></strong>
+                    </div>
                 </div>
-                <div>
-                    <span class="text-muted small d-block">Số lớp đã mở:</span>
-                    <strong class="text-dark fs-4">@(Model.LopHocs?.Count ?? 0) lớp</strong>
+                <div class="col-sm-4">
+                    <div class="p-3 bg-white bg-opacity-10 rounded-3 border border-white border-opacity-25" style="backdrop-filter: blur(8px);">
+                        <span class="text-white-50 small d-block mb-1">Thời lượng đào tạo:</span>
+                        <strong class="text-info fs-4 fw-extrabold">@(Model.SoBuoi > 0 ? Model.SoBuoi : 24) <small class="fs-6 text-white-50">buổi</small></strong>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="p-3 bg-white bg-opacity-10 rounded-3 border border-white border-opacity-25" style="backdrop-filter: blur(8px);">
+                        <span class="text-white-50 small d-block mb-1">Số lớp đã mở:</span>
+                        <strong class="text-white fs-4 fw-extrabold">@soLop <small class="fs-6 text-white-50">lớp</small></strong>
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="col-lg-4 text-center mt-4 mt-lg-0">
-            <i class="fa-solid fa-book-bookmark fa-8x text-primary opacity-25"></i>
+            <div class="p-4 rounded-4 shadow-lg text-white" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                <i class="@iconClass fa-4x mb-3 text-warning"></i>
+                <h5 class="fw-bold text-white mb-1">Chứng Chỉ Chuẩn UNETI</h5>
+                <p class="small text-white-50 mb-0">Cam kết chuẩn đầu ra theo kỳ thi năng lực quốc tế</p>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- DANH SÁCH LỚP HỌC THUỘC KHÓA -->
-<div class="card-custom p-4 shadow-sm">
-    <h4 class="fw-bold text-primary mb-3"><i class="fa-solid fa-chalkboard-user me-2"></i>Danh Sách Lớp Học Mở Thuộc Khóa Này</h4>
+<!-- DANH SÁCH LỚP HỌC MỞ THUỘC KHÓA -->
+<div class="card-custom p-4 shadow-sm border-0 rounded-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-primary mb-1">
+                <i class="fa-solid fa-chalkboard-user me-2"></i>Danh Sách Lớp Học Mở Thuộc Khóa Này
+            </h4>
+            <p class="text-muted small mb-0">Lựa chọn lớp học phù hợp với thời gian biểu của bạn để tiến hành đăng ký</p>
+        </div>
+        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill">
+            Tổng cộng: @soLop lớp học
+        </span>
+    </div>
     
     <div class="table-responsive">
-        <table class="table table-custom table-hover align-middle mb-0">
-            <thead>
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
                 <tr>
-                    <th>Mã Lớp</th>
-                    <th>Tên Lớp Học</th>
-                    <th>Khai Giảng</th>
-                    <th>Lịch Học & Phòng</th>
-                    <th>Số Lượng Tối Đa</th>
-                    <th>Trạng Thái</th>
-                    <th class="text-end">Đăng Ký</th>
+                    <th class="py-3">Mã Lớp</th>
+                    <th class="py-3">Tên Lớp Học</th>
+                    <th class="py-3">Khai Giảng</th>
+                    <th class="py-3">Lịch Học & Phòng</th>
+                    <th class="py-3 text-center">Sĩ Số</th>
+                    <th class="py-3">Trạng Thái</th>
+                    <th class="py-3 text-end">Thao Tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,28 +155,59 @@
                     foreach (var lop in Model.LopHocs)
                     {
                         <tr>
-                            <td class="fw-bold text-secondary">#LH@lop.MaLop.ToString("D3")</td>
-                            <td><strong class="text-dark">@lop.TenLop</strong></td>
-                            <td>@lop.NgayKhaiGiang.ToString("dd/MM/yyyy")</td>
-                            <td class="small">
-                                <div><i class="fa-solid fa-clock text-warning me-1"></i>@lop.LichHoc</div>
-                                <div class="text-muted"><i class="fa-solid fa-building me-1"></i>Phòng @lop.PhongHoc</div>
+                            <td class="fw-bold text-secondary">#LH@(lop.MaLop.ToString("D3"))</td>
+                            <td>
+                                <strong class="text-dark d-block">@lop.TenLop</strong>
+                                <span class="text-danger fw-bold small">@lop.HocPhi.ToString("N0") đ</span>
                             </td>
-                            <td>@lop.SoLuongToiDa học viên</td>
+                            <td>
+                                <span class="fw-semibold text-dark">@lop.NgayKhaiGiang.ToString("dd/MM/yyyy")</span>
+                            </td>
+                            <td class="small">
+                                <div class="fw-semibold text-dark"><i class="fa-solid fa-clock text-warning me-1"></i>@lop.LichHoc</div>
+                                <div class="text-muted"><i class="fa-solid fa-building me-1"></i>@lop.PhongHoc</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border px-2 py-1 rounded">@lop.SoLuongToiDa học viên</span>
+                            </td>
                             <td>
                                 @if (lop.TrangThai == "Đang tuyển sinh")
                                 {
-                                    <span class="badge bg-success px-3 py-1 rounded-pill">Đang tuyển sinh</span>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-semibold">
+                                        <i class="fa-solid fa-circle-check me-1"></i>Đang tuyển sinh
+                                    </span>
+                                }
+                                else if (lop.TrangThai == "Sắp mở")
+                                {
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill fw-semibold">
+                                        <i class="fa-solid fa-hourglass-half me-1"></i>Sắp mở
+                                    </span>
+                                }
+                                else if (lop.TrangThai == "Đang học")
+                                {
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill fw-semibold">
+                                        <i class="fa-solid fa-book-open-reader me-1"></i>Đang học
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary px-3 py-1 rounded-pill">@lop.TrangThai</span>
+                                    <span class="badge bg-secondary-subtle text-secondary border px-3 py-1 rounded-pill">
+                                        @lop.TrangThai
+                                    </span>
                                 }
                             </td>
                             <td class="text-end">
-                                <a asp-controller="DangKyHoc" asp-action="DangKyClass" asp-route-id="@lop.MaLop" class="btn btn-sm btn-warning fw-bold text-dark rounded-pill px-3">
-                                    <i class="fa-solid fa-user-plus me-1"></i>Đăng ký
-                                </a>
+                                <div class="d-inline-flex gap-2">
+                                    <a asp-controller="LopHocs" asp-action="Details" asp-route-id="@lop.MaLop" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                        Chi tiết
+                                    </a>
+                                    @if (lop.TrangThai == "Đang tuyển sinh" || lop.TrangThai == "Sắp mở")
+                                    {
+                                        <a asp-controller="DangKyHoc" asp-action="DangKy" asp-route-maLop="@lop.MaLop" class="btn btn-sm btn-warning fw-bold text-dark rounded-pill px-3 shadow-sm">
+                                            <i class="fa-solid fa-user-plus me-1"></i>Đăng ký
+                                        </a>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }
@@ -91,8 +215,16 @@
                 else
                 {
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
-                            Hiện chưa có lớp học nào mở thuộc khóa học này.
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-chalkboard fa-3x text-secondary opacity-50 mb-3 d-block"></i>
+                            <h6 class="fw-bold text-dark">Hiện chưa có lớp học nào mở thuộc khóa học này</h6>
+                            <p class="small text-muted mb-3">Trung tâm sẽ sớm mở lớp mới trong đợt tuyển sinh tiếp theo.</p>
+                            @if (isAdmin)
+                            {
+                                <a asp-controller="LopHocs" asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
+                                    <i class="fa-solid fa-plus me-1"></i> Thêm lớp học ngay
+                                </a>
+                            }
                         </td>
                     </tr>
                 }

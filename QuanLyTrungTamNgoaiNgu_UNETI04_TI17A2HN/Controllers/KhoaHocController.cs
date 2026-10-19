@@ -74,7 +74,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AuthorizeRole("Admin")]
-        public async Task<IActionResult> Create([Bind("MaKhoaHoc,TenKhoaHoc,NgoaiNgu,CapDo,HocPhi,MoTa")] KhoaHoc khoaHoc)
+        public async Task<IActionResult> Create([Bind("MaKhoaHoc,TenKhoaHoc,NgoaiNgu,CapDo,HocPhi,SoBuoi,MoTa,TrangThai")] KhoaHoc khoaHoc)
         {
             if (ModelState.IsValid)
             {
@@ -102,7 +102,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AuthorizeRole("Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("MaKhoaHoc,TenKhoaHoc,NgoaiNgu,CapDo,HocPhi,MoTa")] KhoaHoc khoaHoc)
+        public async Task<IActionResult> Edit(int id, [Bind("MaKhoaHoc,TenKhoaHoc,NgoaiNgu,CapDo,HocPhi,SoBuoi,MoTa,TrangThai")] KhoaHoc khoaHoc)
         {
             if (id != khoaHoc.MaKhoaHoc) return NotFound();
 
