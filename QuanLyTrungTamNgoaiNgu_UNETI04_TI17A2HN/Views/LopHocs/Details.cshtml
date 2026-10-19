@@ -96,23 +96,20 @@
                             <a asp-action="Edit" asp-route-id="@Model.MaLop" class="btn btn-warning px-3 me-2">
                                 <i class="bi bi-pencil-square"></i> Chỉnh sửa
                             </a>
-                            <a asp-action="Delete" asp-route-id="@Model.MaLop" class="btn btn-danger px-3">
+                            <a asp-action="Delete" asp-route-id="@Model.MaLop" class="btn btn-danger px-3 me-2">
                                 <i class="bi bi-trash"></i> Xóa
+                            </a>
+                        }
+
+                        @if (Model.TrangThai == "Đang tuyển sinh" && soLuongDangKy < Model.SoLuongToiDa)
+                        {
+                            <a asp-controller="DangKyHoc" asp-action="DangKy" asp-route-maLop="@Model.MaLop" class="btn btn-success px-4 fw-bold">
+                                <i class="bi bi-send-check me-1"></i> Đăng ký lớp này
                             </a>
                         }
                         else
                         {
-                           
-                            @if (Model.TrangThai == "Đang tuyển sinh" && soLuongDangKy < Model.SoLuongToiDa)
-                            {
-                                <a asp-controller="DangKyHoc" asp-action="DangKy" asp-route-maLop="@Model.MaLop" class="btn btn-success px-4 fw-bold">
-                                    <i class="bi bi-send-check me-1"></i> Đăng ký lớp này
-                                </a>
-                            }
-                            else
-                            {
-                                <button class="btn btn-secondary px-4" disabled>Lớp tạm ngưng nhận học viên</button>
-                            }
+                            <button class="btn btn-secondary px-4" disabled>Lớp tạm ngưng nhận học viên</button>
                         }
                     </div>
                 </div>
