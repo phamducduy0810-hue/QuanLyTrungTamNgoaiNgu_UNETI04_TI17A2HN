@@ -1,0 +1,73 @@
+@*
+    Họ và tên: Diêm Đức Hùng
+    Mã sinh viên: 23103100099
+    Nội dung thực hiện: Module 3 - Xác nhận xóa giảng viên
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien
+
+@{
+    ViewData["Title"] = "Xóa Giảng viên";
+    int countLop = Model.LopHocs?.Count ?? 0;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 border-top border-danger border-4">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0 fw-bold text-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>XÁC NHẬN XÓA GIẢNG VIÊN
+                    </h4>
+                    <small class="text-muted">Module 3 - Diêm Đức Hùng (23103100099)</small>
+                </div>
+                <div class="card-body p-4">
+                    <p class="fs-6">Bạn có chắc chắn muốn xóa giảng viên sau đây khỏi hệ thống?</p>
+
+                    @if (countLop > 0)
+                    {
+                        <div class="alert alert-warning border-0 shadow-sm" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <strong>Lưu ý:</strong> Giảng viên này đang được phân công phụ trách <strong>@countLop lớp học</strong>. 
+                            Khi xóa, các lớp học này sẽ tự động chuyển về trạng thái <em>Chưa phân công giảng viên</em>.
+                        </div>
+                    }
+
+                    <div class="bg-light p-3 rounded mb-4">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">Mã giảng viên:</dt>
+                            <dd class="col-sm-8 fw-bold">#@Model.MaGiangVien</dd>
+
+                            <dt class="col-sm-4 text-muted">Họ và tên:</dt>
+                            <dd class="col-sm-8 text-primary fw-bold">@Model.HoTen</dd>
+
+                            <dt class="col-sm-4 text-muted">Số điện thoại:</dt>
+                            <dd class="col-sm-8">@Model.SoDienThoai</dd>
+
+                            <dt class="col-sm-4 text-muted">Email:</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+
+                            <dt class="col-sm-4 text-muted">Chuyên môn:</dt>
+                            <dd class="col-sm-8">@(Model.ChuyenMon ?? "Chung")</dd>
+
+                            <dt class="col-sm-4 text-muted">Trình độ:</dt>
+                            <dd class="col-sm-8">@(Model.TrinhDo ?? "Chưa cập nhật")</dd>
+                        </dl>
+                    </div>
+
+                    <form asp-action="Delete" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="MaGiangVien" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-arrow-left me-1"></i> Hủy thao tác
+                            </a>
+                            <button type="submit" class="btn btn-danger px-4 fw-bold">
+                                <i class="bi bi-trash-fill me-1"></i> Xác nhận xóa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

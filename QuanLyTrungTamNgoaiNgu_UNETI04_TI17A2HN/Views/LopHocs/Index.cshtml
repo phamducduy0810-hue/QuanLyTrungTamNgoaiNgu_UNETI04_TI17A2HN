@@ -49,54 +49,103 @@
             <form method="get" asp-action="Index">
                 <div class="row g-3">
                     
+                    <!-- 1. TÌM KIẾM TỪ KHÓA -->
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Tìm kiếm từ khóa</label>
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-search text-primary me-1"></i>Từ khóa tìm kiếm
+                        </label>
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                             <input type="text" name="SearchKeyword" value="@Model.SearchKeyword" class="form-control" placeholder="Tên lớp hoặc khóa học..." />
                         </div>
                     </div>
 
-                    
+                    <!-- 2. LỌC THEO KHÓA HỌC -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Khóa học</label>
-                        <select name="MaKhoaHoc" class="form-select" asp-items="ViewBag.KhoaHocList">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-book text-primary me-1"></i>Khóa học
+                        </label>
+                        <select name="MaKhoaHoc" class="form-select bg-white">
                             <option value="">-- Tất cả khóa học --</option>
+                            @if (ViewBag.KhoaHocs != null)
+                            {
+                                foreach (var kh in (IEnumerable<QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc>)ViewBag.KhoaHocs)
+                                {
+                                    <option value="@kh.MaKhoaHoc" selected="@(Model.MaKhoaHoc == kh.MaKhoaHoc ? "selected" : null)">
+                                        @kh.TenKhoaHoc
+                                    </option>
+                                }
+                            }
                         </select>
                     </div>
 
-                    
+                    <!-- 3. LỌC THEO NGOẠI NGỮ -->
                     <div class="col-md-2">
-                        <label class="form-label fw-bold">Ngoại ngữ</label>
-                        <select name="NgoaiNgu" class="form-select" asp-items="ViewBag.NgoaiNguList">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-translate text-primary me-1"></i>Ngoại ngữ
+                        </label>
+                        <select name="NgoaiNgu" class="form-select bg-white">
                             <option value="">-- Tất cả --</option>
+                            @if (ViewBag.NgoaiNgus != null)
+                            {
+                                foreach (var nn in (IEnumerable<string>)ViewBag.NgoaiNgus)
+                                {
+                                    <option value="@nn" selected="@(Model.NgoaiNgu == nn ? "selected" : null)">
+                                        @nn
+                                    </option>
+                                }
+                            }
                         </select>
                     </div>
 
-                    
+                    <!-- 4. LỌC THEO TRẠNG THÁI -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Trạng thái lớp</label>
-                        <select name="TrangThai" class="form-select" asp-items="ViewBag.TrangThaiList">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-tag text-primary me-1"></i>Trạng thái lớp
+                        </label>
+                        <select name="TrangThai" class="form-select bg-white">
                             <option value="">-- Tất cả trạng thái --</option>
+                            @foreach (var tt in new[] { "Sắp mở", "Đang tuyển sinh", "Đang học", "Đã kết thúc" })
+                            {
+                                <option value="@tt" selected="@(Model.TrangThai == tt ? "selected" : null)">
+                                    @tt
+                                </option>
+                            }
                         </select>
                     </div>
 
-                    
+                    <!-- 5. KHOẢNG HỌC PHÍ TỪ -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Học phí từ (VNĐ)</label>
-                        <input type="number" name="GiaTu" value="@Model.GiaTu" class="form-control" placeholder="Tối thiểu..." step="50000" />
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-cash-stack text-success me-1"></i>Học phí từ (VNĐ)
+                        </label>
+                        <input type="text" 
+                               inputmode="numeric" 
+                               name="GiaTu" 
+                               value="@(Model.GiaTu.HasValue ? Model.GiaTu.Value.ToString("N0") : "")" 
+                               class="form-control bg-white" 
+                               placeholder="VD: 1.000.000 hoặc 1000000" />
                     </div>
 
-                    
+                    <!-- 6. KHOẢNG HỌC PHÍ ĐẾN -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Học phí đến (VNĐ)</label>
-                        <input type="number" name="GiaDen" value="@Model.GiaDen" class="form-control" placeholder="Tối đa..." step="50000" />
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-cash-stack text-danger me-1"></i>Học phí đến (VNĐ)
+                        </label>
+                        <input type="text" 
+                               inputmode="numeric" 
+                               name="GiaDen" 
+                               value="@(Model.GiaDen.HasValue ? Model.GiaDen.Value.ToString("N0") : "")" 
+                               class="form-control bg-white" 
+                               placeholder="VD: 5.000.000 hoặc 5000000" />
                     </div>
 
-                    
+                    <!-- 7. SẮP XẾP THEO -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Sắp xếp theo</label>
-                        <select name="SortOrder" class="form-select">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-arrow-down-up text-primary me-1"></i>Sắp xếp theo
+                        </label>
+                        <select name="SortOrder" class="form-select bg-white">
                             <option value="name_asc" selected="@(Model.SortOrder == "name_asc")">Tên lớp A → Z</option>
                             <option value="name_desc" selected="@(Model.SortOrder == "name_desc")">Tên lớp Z → A</option>
                             <option value="price_asc" selected="@(Model.SortOrder == "price_asc")">Học phí Thấp → Cao</option>
@@ -106,16 +155,89 @@
                         </select>
                     </div>
 
-                    
+                    <!-- NÚT ÁP DỤNG & RESET BỘ LỌC -->
                     <div class="col-md-3 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary w-100 py-2">
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
                             <i class="bi bi-funnel-fill me-1"></i> Áp dụng Lọc
                         </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary py-2" title="Xóa bộ lọc">
+                        <a asp-action="Index" class="btn btn-outline-secondary py-2 px-3" title="Đặt lại toàn bộ bộ lọc">
                             <i class="bi bi-arrow-counterclockwise"></i>
                         </a>
                     </div>
                 </div>
+
+                @{
+                    bool hasActiveFilters = !string.IsNullOrWhiteSpace(Model.SearchKeyword) ||
+                                            Model.MaKhoaHoc.HasValue ||
+                                            !string.IsNullOrWhiteSpace(Model.NgoaiNgu) ||
+                                            !string.IsNullOrWhiteSpace(Model.TrangThai) ||
+                                            Model.GiaTu.HasValue ||
+                                            Model.GiaDen.HasValue ||
+                                            (!string.IsNullOrEmpty(Model.SortOrder) && Model.SortOrder != "name_asc");
+                }
+
+                @if (hasActiveFilters)
+                {
+                    <div class="mt-3 pt-3 border-top d-flex flex-wrap align-items-center gap-2">
+                        <span class="small text-muted fw-bold me-1">
+                            <i class="bi bi-check2-circle text-success me-1"></i>Điều kiện đang kết hợp lọc:
+                        </span>
+                        @if (!string.IsNullOrWhiteSpace(Model.SearchKeyword))
+                        {
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+                                Từ khóa: "@Model.SearchKeyword"
+                            </span>
+                        }
+                        @if (Model.MaKhoaHoc.HasValue && ViewBag.KhoaHocs != null)
+                        {
+                            int selectedId = Model.MaKhoaHoc.Value;
+                            var khSelected = ((IEnumerable<QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc>)ViewBag.KhoaHocs).FirstOrDefault(k => k.MaKhoaHoc == selectedId);
+                            <span class="badge bg-info-subtle text-dark border border-info-subtle px-3 py-2 rounded-pill">
+                                Khóa học: @(khSelected?.TenKhoaHoc ?? selectedId.ToString())
+                            </span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.NgoaiNgu))
+                        {
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                                Ngoại ngữ: @Model.NgoaiNgu
+                            </span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.TrangThai))
+                        {
+                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-3 py-2 rounded-pill">
+                                Trạng thái: @Model.TrangThai
+                            </span>
+                        }
+                        @if (Model.GiaTu.HasValue || Model.GiaDen.HasValue)
+                        {
+                            string priceText = "";
+                            if (Model.GiaTu.HasValue && Model.GiaDen.HasValue)
+                            {
+                                priceText = $"Học phí: {Model.GiaTu.Value:N0}đ - {Model.GiaDen.Value:N0}đ";
+                            }
+                            else if (Model.GiaTu.HasValue)
+                            {
+                                priceText = $"Học phí từ: {Model.GiaTu.Value:N0}đ";
+                            }
+                            else if (Model.GiaDen.HasValue)
+                            {
+                                priceText = $"Học phí đến: {Model.GiaDen.Value:N0}đ";
+                            }
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-bold">
+                                @priceText
+                            </span>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.SortOrder) && Model.SortOrder != "name_asc")
+                        {
+                            <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill">
+                                Sắp xếp: @Model.SortOrder
+                            </span>
+                        }
+                        <a asp-action="Index" class="btn btn-link btn-sm text-danger text-decoration-none ms-auto fw-semibold">
+                            <i class="bi bi-x-circle me-1"></i>Xóa tất cả bộ lọc
+                        </a>
+                    </div>
+                }
             </form>
         </div>
     </div>
@@ -225,14 +347,13 @@
                                asp-route-MaKhoaHoc="@Model.MaKhoaHoc"
                                asp-route-NgoaiNgu="@Model.NgoaiNgu"
                                asp-route-TrangThai="@Model.TrangThai"
-                               asp-route-GiaTu="@Model.GiaTu"
-                               asp-route-GiaDen="@Model.GiaDen"
+                               asp-route-GiaTu="@(Model.GiaTu.HasValue ? Model.GiaTu.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+                               asp-route-GiaDen="@(Model.GiaDen.HasValue ? Model.GiaDen.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
                                asp-route-SortOrder="@Model.SortOrder">
                                 &laquo; Trước
                             </a>
                         </li>
 
-                        
                         @for (int p = 1; p <= Model.TotalPages; p++)
                         {
                             <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
@@ -243,8 +364,8 @@
                                    asp-route-MaKhoaHoc="@Model.MaKhoaHoc"
                                    asp-route-NgoaiNgu="@Model.NgoaiNgu"
                                    asp-route-TrangThai="@Model.TrangThai"
-                                   asp-route-GiaTu="@Model.GiaTu"
-                                   asp-route-GiaDen="@Model.GiaDen"
+                                   asp-route-GiaTu="@(Model.GiaTu.HasValue ? Model.GiaTu.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+                                   asp-route-GiaDen="@(Model.GiaDen.HasValue ? Model.GiaDen.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
                                    asp-route-SortOrder="@Model.SortOrder">
                                     @p
                                 </a>
@@ -260,8 +381,8 @@
                                asp-route-MaKhoaHoc="@Model.MaKhoaHoc"
                                asp-route-NgoaiNgu="@Model.NgoaiNgu"
                                asp-route-TrangThai="@Model.TrangThai"
-                               asp-route-GiaTu="@Model.GiaTu"
-                               asp-route-GiaDen="@Model.GiaDen"
+                               asp-route-GiaTu="@(Model.GiaTu.HasValue ? Model.GiaTu.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+                               asp-route-GiaDen="@(Model.GiaDen.HasValue ? Model.GiaDen.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
                                asp-route-SortOrder="@Model.SortOrder">
                                 Sau &raquo;
                             </a>

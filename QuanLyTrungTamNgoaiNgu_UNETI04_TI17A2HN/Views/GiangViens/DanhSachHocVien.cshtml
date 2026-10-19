@@ -1,0 +1,128 @@
+@*
+    Họ và tên: Diêm Đức Hùng
+    Mã sinh viên: 23103100099
+    Nội dung thực hiện: Module 3 - Xem danh sách học viên trong lớp của giảng viên
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.LopHoc
+
+@{
+    ViewData["Title"] = "Danh sách học viên - " + Model.TenLop;
+    var danhSachDangKy = Model.DangKyHocs?.Where(d => d.TrangThai == "Đã xác nhận").OrderBy(d => d.HocVien?.HoTen).ToList();
+    int stt = 1;
+}
+
+<div class="container py-4">
+    <!-- TIÊU ĐỀ & NÚT THAO TÁC -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="text-primary fw-bold mb-1">
+                <i class="bi bi-people-fill me-2"></i>DANH SÁCH HỌC VIÊN LỚP: @Model.TenLop
+            </h3>
+            <p class="text-muted mb-0">Module 3 - Diêm Đức Hùng (23103100099) | Dành cho Giảng viên phụ trách</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-dark px-3 shadow-sm">
+                <i class="bi bi-printer me-1"></i> In danh sách
+            </button>
+            <a asp-action="LichDay" class="btn btn-primary px-3 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại lịch dạy
+            </a>
+        </div>
+    </div>
+
+    <!-- THÔNG TIN TỔNG QUAN LỚP HỌC -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <span class="text-muted small text-uppercase fw-bold">Khóa học:</span>
+                    <div class="fw-bold text-primary mt-1">@Model.KhoaHoc?.TenKhoaHoc</div>
+                    <small class="text-muted">@Model.KhoaHoc?.NgoaiNgu - @Model.KhoaHoc?.CapDo</small>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted small text-uppercase fw-bold">Lịch & Phòng học:</span>
+                    <div class="fw-bold text-dark mt-1"><i class="bi bi-clock me-1"></i>@Model.LichHoc</div>
+                    <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>Phòng: <strong>@Model.PhongHoc</strong></small>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted small text-uppercase fw-bold">Thời gian:</span>
+                    <div class="fw-bold text-dark mt-1">Khai giảng: @Model.NgayKhaiGiang.ToString("dd/MM/yyyy")</div>
+                    <small class="text-muted">Trạng thái: <span class="badge bg-secondary">@Model.TrangThai</span></small>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted small text-uppercase fw-bold">Sĩ số lớp học:</span>
+                    <div class="fs-4 fw-bold text-success mt-1">@(danhSachDangKy?.Count ?? 0) / @Model.SoLuongToiDa học viên</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BẢNG DANH SÁCH HỌC VIÊN -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-person-lines-fill me-2"></i>DANH SÁCH HỌC VIÊN CHÍNH THỨC
+            </h5>
+            <span class="badge bg-success px-3 py-2">@(danhSachDangKy?.Count ?? 0) học viên đã đăng ký</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="text-center" style="width: 60px;">STT</th>
+                            <th class="text-center" style="width: 80px;">Mã HV</th>
+                            <th>Họ và Tên</th>
+                            <th class="text-center">Giới tính</th>
+                            <th>Ngày sinh</th>
+                            <th>Số điện thoại</th>
+                            <th>Email</th>
+                            <th class="text-center">Ngày đăng ký</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (danhSachDangKy != null && danhSachDangKy.Any())
+                        {
+                            foreach (var item in danhSachDangKy)
+                            {
+                                var hv = item.HocVien;
+                                <tr>
+                                    <td class="text-center fw-bold text-muted">@(stt++)</td>
+                                    <td class="text-center fw-bold">#@hv?.MaHocVien</td>
+                                    <td>
+                                        <div class="fw-bold text-primary">@hv?.HoTen</div>
+                                        <small class="text-muted">@(string.IsNullOrEmpty(hv?.DiaChi) ? "" : hv.DiaChi)</small>
+                                    </td>
+                                    <td class="text-center">@(hv?.GioiTinh ?? "Nam")</td>
+                                    <td>@(hv?.NgaySinh.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>
+                                        <a href="tel:@hv?.SoDienThoai" class="text-success text-decoration-none fw-bold">
+                                            <i class="bi bi-telephone-fill me-1"></i>@hv?.SoDienThoai
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:@hv?.Email" class="text-info text-decoration-none">
+                                            <i class="bi bi-envelope-fill me-1"></i>@hv?.Email
+                                        </a>
+                                    </td>
+                                    <td class="text-center text-muted">
+                                        @item.NgayDangKy.ToString("dd/MM/yyyy")
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 text-warning"></i>
+                                    Lớp học này hiện tại chưa có học viên nào đăng ký chính thức.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

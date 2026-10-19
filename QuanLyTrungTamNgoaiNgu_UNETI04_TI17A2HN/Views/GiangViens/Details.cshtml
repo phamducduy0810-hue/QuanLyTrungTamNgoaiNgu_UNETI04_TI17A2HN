@@ -1,0 +1,239 @@
+@*
+    Họ và tên: Diêm Đức Hùng
+    Mã sinh viên: 23103100099
+    Nội dung thực hiện: Module 3 - Chi tiết giảng viên & Danh sách lớp học phân công
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien
+
+@{
+    ViewData["Title"] = "Chi tiết Giảng viên - " + Model.HoTen;
+    var lopChuaPhanCong = ViewBag.LopChuaPhanCong as List<QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.LopHoc>;
+}
+
+<div class="container py-4">
+    <!-- TIÊU ĐỀ -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="text-primary fw-bold mb-1">
+                <i class="bi bi-person-badge-fill me-2"></i>HỒ SƠ GIẢNG VIÊN: @Model.HoTen
+            </h3>
+            <p class="text-muted mb-0">Module 3 - Diêm Đức Hùng (23103100099) | Quản lý giảng viên & Lớp phân công</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.MaGiangVien" class="btn btn-primary px-3 shadow-sm">
+                <i class="bi bi-pencil-square me-1"></i> Chỉnh sửa
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary px-3 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <!-- THÔNG BÁO -->
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Loi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- THÔNG TIN HỒ SƠ GIẢNG VIÊN -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-card-heading text-primary me-2"></i>Thông tin cá nhân & Chuyên môn
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-6 border-end">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Mã giảng viên:</dt>
+                        <dd class="col-sm-8 fw-bold">#@Model.MaGiangVien</dd>
+
+                        <dt class="col-sm-4 text-muted">Họ và tên:</dt>
+                        <dd class="col-sm-8 text-primary fw-bold fs-6">@Model.HoTen</dd>
+
+                        <dt class="col-sm-4 text-muted">Giới tính:</dt>
+                        <dd class="col-sm-8">@(Model.GioiTinh ?? "Nam")</dd>
+
+                        <dt class="col-sm-4 text-muted">Ngày sinh:</dt>
+                        <dd class="col-sm-8">@(Model.NgaySinh.HasValue ? Model.NgaySinh.Value.ToString("dd/MM/yyyy") : "Chưa cập nhật")</dd>
+
+                        <dt class="col-sm-4 text-muted">Địa chỉ:</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.DiaChi) ? "Chưa cập nhật" : Model.DiaChi)</dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-6">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Số điện thoại:</dt>
+                        <dd class="col-sm-8 text-success fw-bold">
+                            <i class="bi bi-telephone me-1"></i>@Model.SoDienThoai
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Email:</dt>
+                        <dd class="col-sm-8 text-info fw-bold">
+                            <i class="bi bi-envelope me-1"></i>@Model.Email
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Trình độ / Học vị:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-light text-dark border">
+                                @(string.IsNullOrEmpty(Model.TrinhDo) ? "Chưa cập nhật" : Model.TrinhDo)
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Chuyên môn:</dt>
+                        <dd class="col-sm-8 fw-bold text-dark">
+                            @(string.IsNullOrEmpty(Model.ChuyenMon) ? "Chung" : Model.ChuyenMon)
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Trạng thái:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.TrangThai)
+                            {
+                                <span class="badge bg-success">Đang giảng dạy</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Tạm nghỉ</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.GhiChu))
+                {
+                    <div class="col-12 mt-2 pt-2 border-top">
+                        <span class="text-muted fw-bold">Ghi chú:</span>
+                        <span class="text-secondary ms-2">@Model.GhiChu</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- DANH SÁCH LỚP HỌC ĐƯỢC PHÂN CÔNG GIẢNG DẠY -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-mortarboard-fill me-2 text-warning"></i>CÁC LỚP HỌC PHÂN CÔNG CHO GIẢNG VIÊN (@(Model.LopHocs?.Count ?? 0) Lớp)
+            </h5>
+            <span class="badge bg-primary px-3 py-2">Module 3 - Phân công giảng dạy</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="text-center" style="width: 70px;">Mã lớp</th>
+                            <th>Tên lớp học</th>
+                            <th>Khóa học</th>
+                            <th>Lịch học</th>
+                            <th>Phòng học</th>
+                            <th>Ngày khai giảng</th>
+                            <th class="text-center">Sĩ số</th>
+                            <th class="text-center">Trạng thái lớp</th>
+                            <th class="text-center" style="width: 170px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.LopHocs != null && Model.LopHocs.Any())
+                        {
+                            foreach (var lop in Model.LopHocs)
+                            {
+                                int dangKyCount = lop.DangKyHocs?.Count(d => d.TrangThai == "Đã xác nhận") ?? 0;
+                                <tr>
+                                    <td class="text-center fw-bold">#@lop.MaLop</td>
+                                    <td class="fw-bold text-primary">@lop.TenLop</td>
+                                    <td>
+                                        <div>@lop.KhoaHoc?.TenKhoaHoc</div>
+                                        <small class="text-muted">@lop.KhoaHoc?.NgoaiNgu - @lop.KhoaHoc?.CapDo</small>
+                                    </td>
+                                    <td><i class="bi bi-clock me-1 text-muted"></i>@lop.LichHoc</td>
+                                    <td><span class="badge bg-light text-dark border">@lop.PhongHoc</span></td>
+                                    <td>@lop.NgayKhaiGiang.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info text-dark">@dangKyCount / @lop.SoLuongToiDa</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">@lop.TrangThai</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-controller="LopHocs" asp-action="Details" asp-route-id="@lop.MaLop" class="btn btn-outline-info" title="Xem chi tiết lớp">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <form asp-action="HuyPhanCong" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phân công giảng viên này khỏi lớp @lop.TenLop?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maLop" value="@lop.MaLop" />
+                                                <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                                <button type="submit" class="btn btn-outline-danger" title="Hủy phân công lớp này">
+                                                    <i class="bi bi-x-circle"></i> Hủy
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="bi bi-calendar-x fs-2 d-block mb-2 text-warning"></i>
+                                    Giảng viên này hiện chưa được phân công phụ trách lớp học nào.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHÂN CÔNG THÊM LỚP CHO GIẢNG VIÊN NÀY -->
+    @if (lopChuaPhanCong != null && lopChuaPhanCong.Any())
+    {
+        <div class="card shadow-sm border-0 border-top border-warning border-3 bg-light">
+            <div class="card-body p-4">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-plus-circle-fill text-warning me-2"></i>Gán thêm Lớp học mới cho Giảng viên @Model.HoTen
+                </h5>
+                <form asp-action="CapNhatPhanCong" method="post" class="row g-3 align-items-center">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="maGiangVien" value="@Model.MaGiangVien" />
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+
+                    <div class="col-md-9">
+                        <label class="form-label fw-bold text-muted small">Chọn lớp học đang chờ phân công:</label>
+                        <select name="maLop" class="form-select" required>
+                            <option value="">-- Chọn lớp học --</option>
+                            @foreach (var lop in lopChuaPhanCong)
+                            {
+                                <option value="@lop.MaLop">
+                                    [#@lop.MaLop] @lop.TenLop - @lop.KhoaHoc?.TenKhoaHoc (@lop.LichHoc | Phòng @lop.PhongHoc)
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mt-md-4 pt-md-2">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold text-dark">
+                            <i class="bi bi-check2-circle me-1"></i> Phân công ngay
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+</div>

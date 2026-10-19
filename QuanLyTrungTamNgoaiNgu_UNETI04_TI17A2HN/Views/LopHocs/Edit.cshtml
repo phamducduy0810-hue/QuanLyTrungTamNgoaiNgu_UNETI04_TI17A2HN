@@ -34,6 +34,14 @@
                             <span asp-validation-for="MaKhoaHoc" class="text-danger"></span>
                         </div>
 
+                        <div class="mb-3">
+                            <label asp-for="MaGiangVien" class="form-label fw-bold"></label>
+                            <select asp-for="MaGiangVien" class="form-select" asp-items="ViewBag.MaGiangVien">
+                                <option value="">-- Chưa phân công giảng viên --</option>
+                            </select>
+                            <span asp-validation-for="MaGiangVien" class="text-danger"></span>
+                        </div>
+
                         
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -64,7 +72,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="HocPhi" class="form-label fw-bold"></label>
-                                <input asp-for="HocPhi" type="number" step="10000" class="form-control" min="10000" />
+                                <input asp-for="HocPhi" type="number" step="any" class="form-control" min="1" />
                                 <span asp-validation-for="HocPhi" class="text-danger"></span>
                             </div>
                         </div>

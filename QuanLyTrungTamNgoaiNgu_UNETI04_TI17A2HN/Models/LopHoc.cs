@@ -59,6 +59,13 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models
         [StringLength(50)]
         [Display(Name = "Trạng thái")]
         public string TrangThai { get; set; } = "Sắp mở";
+
+        [Display(Name = "Giảng viên phụ trách")]
+        public int? MaGiangVien { get; set; }
+
+        [ForeignKey(nameof(MaGiangVien))]
+        [Display(Name = "Giảng viên phụ trách")]
+        public virtual GiangVien? GiangVien { get; set; }
        
         public virtual ICollection<DangKyHoc>? DangKyHocs { get; set; }
     }

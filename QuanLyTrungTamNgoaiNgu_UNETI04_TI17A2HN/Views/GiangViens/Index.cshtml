@@ -1,0 +1,220 @@
+@*
+    Họ và tên: Diêm Đức Hùng
+    Mã sinh viên: 23103100099
+    Nội dung thực hiện: Module 3 - Quản lý giảng viên & Thống kê phân công giảng dạy
+*@
+@model IEnumerable<QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien>
+
+@{
+    ViewData["Title"] = "Quản lý Giảng viên";
+}
+
+<div class="container py-4">
+    <!-- TIÊU ĐỀ & NÚT THAO TÁC -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="text-primary fw-bold mb-1">
+                <i class="bi bi-person-workspace me-2"></i>QUẢN LÝ GIẢNG VIÊN
+            </h2>
+            <p class="text-muted mb-0">
+                <span class="badge bg-secondary me-2">Module 3</span>
+                <strong>Diêm Đức Hùng - 23103100099</strong>: Quản lý thông tin & Phân công giảng dạy
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="PhanCong" class="btn btn-warning px-3 shadow-sm text-dark fw-bold">
+                <i class="bi bi-calendar-check me-1"></i> Phân công lớp học
+            </a>
+            <a asp-action="Create" class="btn btn-success px-3 shadow-sm">
+                <i class="bi bi-person-plus-fill me-1"></i> Thêm Giảng viên
+            </a>
+        </div>
+    </div>
+
+    <!-- THÔNG BÁO -->
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Loi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- CARDS THỐNG KÊ NHANH -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-primary border-4 bg-light">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-bold text-uppercase">Tổng số giảng viên</div>
+                    <div class="fs-4 fw-bold text-primary mt-1">@ViewBag.TongSoGV</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-success border-4 bg-light">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-bold text-uppercase">Đang giảng dạy</div>
+                    <div class="fs-4 fw-bold text-success mt-1">@ViewBag.GVDangDay</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-info border-4 bg-light">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-bold text-uppercase">Lớp đã có giảng viên</div>
+                    <div class="fs-4 fw-bold text-info mt-1">@ViewBag.TongLopDaPhanCong</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-warning border-4 bg-light">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-bold text-uppercase">Lớp chưa phân công</div>
+                    <div class="fs-4 fw-bold text-warning mt-1">@ViewBag.TongLopChuaPhanCong</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHỐI TÌM KIẾM & BỘ LỌC -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-3">
+            <form method="get" asp-action="Index">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="text" name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm theo tên, email, sđt, chuyên môn..." />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="chuyenMon" value="@ViewBag.ChuyenMon" class="form-control" placeholder="Chuyên môn (IELTS, TOEIC...)" />
+                    </div>
+                    <div class="col-md-2">
+                        <select name="trangThai" class="form-select">
+                            <option value="">-- Trạng thái --</option>
+                            <option value="true" selected="@(ViewBag.TrangThai == true ? "selected" : null)">Đang dạy</option>
+                            <option value="false" selected="@(ViewBag.TrangThai == false ? "selected" : null)">Tạm nghỉ</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-funnel me-1"></i> Lọc
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BẢNG DANH SÁCH GIẢNG VIÊN -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center" style="width: 70px;">Mã GV</th>
+                            <th>Họ và Tên</th>
+                            <th>Trình độ / Học vị</th>
+                            <th>Chuyên môn</th>
+                            <th>Liên hệ</th>
+                            <th class="text-center">Số lớp dạy</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th class="text-center" style="width: 260px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                int countLop = item.LopHocs?.Count ?? 0;
+                                <tr>
+                                    <td class="text-center fw-bold text-muted">#@item.MaGiangVien</td>
+                                    <td>
+                                        <div class="fw-bold text-primary fs-6">@item.HoTen</div>
+                                        <small class="text-muted">
+                                            @(item.GioiTinh ?? "Nam") - @(item.NgaySinh.HasValue ? item.NgaySinh.Value.ToString("dd/MM/yyyy") : "N/A")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            @(string.IsNullOrEmpty(item.TrinhDo) ? "Chưa cập nhật" : item.TrinhDo)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-dark">
+                                            @(string.IsNullOrEmpty(item.ChuyenMon) ? "Chung" : item.ChuyenMon)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div><i class="bi bi-telephone text-success me-1"></i>@item.SoDienThoai</div>
+                                        <div><i class="bi bi-envelope text-info me-1"></i><small>@item.Email</small></div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (countLop > 0)
+                                        {
+                                            <a asp-action="Details" asp-route-id="@item.MaGiangVien" class="badge bg-primary text-decoration-none px-2 py-1" title="Bấm để xem các lớp">
+                                                @countLop lớp học
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">0 lớp</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.TrangThai)
+                                        {
+                                            <span class="badge bg-success">Đang giảng dạy</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Tạm nghỉ</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="Details" asp-route-id="@item.MaGiangVien" class="btn btn-outline-info" title="Chi tiết & Lớp giảng dạy">
+                                                <i class="bi bi-eye"></i> Chi tiết
+                                            </a>
+                                            <a asp-action="PhanCong" asp-route-maGiangVien="@item.MaGiangVien" class="btn btn-outline-warning" title="Phân công lớp">
+                                                <i class="bi bi-calendar-plus"></i> Phân công
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.MaGiangVien" class="btn btn-outline-primary" title="Chỉnh sửa">
+                                                <i class="bi bi-pencil"></i> Sửa
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.MaGiangVien" class="btn btn-outline-danger" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Không tìm thấy dữ liệu giảng viên nào phù hợp.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

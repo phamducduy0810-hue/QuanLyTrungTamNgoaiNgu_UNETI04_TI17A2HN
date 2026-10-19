@@ -36,6 +36,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
             {
                 var taiKhoan = await _context.TaiKhoans
                     .Include(t => t.HocVien)
+                    .Include(t => t.GiangVien)
                     .FirstOrDefaultAsync(t => t.TenDangNhap == model.TenDangNhap && t.MatKhau == model.MatKhau);
 
                 if (taiKhoan == null)
@@ -61,11 +62,21 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                     HttpContext.Session.SetInt32("MaHocVien", taiKhoan.HocVien.MaHocVien);
                 }
 
+                if (taiKhoan.GiangVien != null)
+                {
+                    HttpContext.Session.SetInt32("MaGiangVien", taiKhoan.GiangVien.MaGiangVien);
+                }
+
                 TempData["SuccessMessage"] = $"Đăng nhập thành công! Chào mừng {taiKhoan.HoTen}.";
 
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
                     return Redirect(returnUrl);
+                }
+
+                if (taiKhoan.VaiTro == "GiangVien")
+                {
+                    return RedirectToAction("LichDay", "GiangViens");
                 }
 
                 return RedirectToAction("Index", "Home");
@@ -135,7 +146,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         }
 
         // GET: /TaiKhoan/Profile
-        [AuthorizeRole("Admin", "HocVien")]
+        [AuthorizeRole("Admin", "HocVien", "GiangVien")]
         public async Task<IActionResult> Profile()
         {
             int? maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
@@ -143,6 +154,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
             var taiKhoan = await _context.TaiKhoans
                 .Include(t => t.HocVien)
+                .Include(t => t.GiangVien)
                 .FirstOrDefaultAsync(t => t.MaTaiKhoan == maTaiKhoan.Value);
 
             if (taiKhoan == null) return NotFound();

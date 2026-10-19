@@ -22,10 +22,11 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         public async Task<IActionResult> DangKy(int? maLop)
         {
             var vaiTro = HttpContext.Session.GetString("VaiTro");
-            if (vaiTro != "HocVien")
+            if (string.IsNullOrEmpty(vaiTro))
             {
-                TempData["Loi"] = "Bạn phải đăng nhập với tài khoản học viên để đăng ký.";
-                return RedirectToAction("Login", "TaiKhoan");
+                TempData["ErrorMessage"] = "Vui lòng đăng nhập hoặc đăng ký tài khoản để tiếp tục đăng ký lớp học.";
+                string returnUrl = Url.Action("DangKy", "DangKyHoc", new { maLop = maLop }) ?? "/";
+                return RedirectToAction("Login", "TaiKhoan", new { returnUrl = returnUrl });
             }
 
             var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
@@ -34,8 +35,27 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
             var hocVien = await _context.HocViens.FirstOrDefaultAsync(h => h.MaTaiKhoan == maTaiKhoan);
             if (hocVien == null)
             {
-                TempData["Loi"] = "Bạn cần cập nhật thông tin cá nhân trước khi đăng ký.";
-                return RedirectToAction("CaNhan", "HocViens");
+                var tk = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+                if (tk != null)
+                {
+                    hocVien = new HocVien
+                    {
+                        MaTaiKhoan = tk.MaTaiKhoan,
+                        HoTen = tk.HoTen,
+                        Email = tk.Email,
+                        SoDienThoai = "0988888888",
+                        GioiTinh = "Nam",
+                        NgaySinh = DateTime.Today.AddYears(-20),
+                        DiaChi = "Hà Nội"
+                    };
+                    _context.HocViens.Add(hocVien);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    TempData["Loi"] = "Bạn cần cập nhật thông tin cá nhân trước khi đăng ký.";
+                    return RedirectToAction("CaNhan", "HocViens");
+                }
             }
 
             if (maLop == null) return NotFound();
@@ -74,13 +94,35 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         public async Task<IActionResult> XacNhanDangKy(int maLop)
         {
             var vaiTro = HttpContext.Session.GetString("VaiTro");
-            if (vaiTro != "HocVien") return RedirectToAction("Login", "TaiKhoan");
+            if (string.IsNullOrEmpty(vaiTro)) return RedirectToAction("Login", "TaiKhoan");
 
             var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
             if (maTaiKhoan == null) return RedirectToAction("Login", "TaiKhoan");
 
             var hocVien = await _context.HocViens.FirstOrDefaultAsync(h => h.MaTaiKhoan == maTaiKhoan);
-            if (hocVien == null) return RedirectToAction("CaNhan", "HocViens");
+            if (hocVien == null)
+            {
+                var tk = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+                if (tk != null)
+                {
+                    hocVien = new HocVien
+                    {
+                        MaTaiKhoan = tk.MaTaiKhoan,
+                        HoTen = tk.HoTen,
+                        Email = tk.Email,
+                        SoDienThoai = "0988888888",
+                        GioiTinh = "Nam",
+                        NgaySinh = DateTime.Today.AddYears(-20),
+                        DiaChi = "Hà Nội"
+                    };
+                    _context.HocViens.Add(hocVien);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    return RedirectToAction("CaNhan", "HocViens");
+                }
+            }
 
             var lopHoc = await _context.LopHocs.FirstOrDefaultAsync(l => l.MaLop == maLop);
             if (lopHoc == null) return NotFound();
@@ -126,13 +168,16 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         public async Task<IActionResult> LichSu()
         {
             var vaiTro = HttpContext.Session.GetString("VaiTro");
-            if (vaiTro != "HocVien") return RedirectToAction("Login", "TaiKhoan");
+            if (string.IsNullOrEmpty(vaiTro)) return RedirectToAction("Login", "TaiKhoan");
 
             var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
             if (maTaiKhoan == null) return RedirectToAction("Login", "TaiKhoan");
 
             var hocVien = await _context.HocViens.FirstOrDefaultAsync(h => h.MaTaiKhoan == maTaiKhoan);
-            if (hocVien == null) return RedirectToAction("CaNhan", "HocViens");
+            if (hocVien == null)
+            {
+                return View(new List<DangKyHoc>());
+            }
 
             var danhSach = await _context.DangKyHocs
                 .Include(d => d.LopHoc)
@@ -147,5 +192,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         // GET: DangKyHoc/LichSuDangKy (Hỗ trợ URL alias)
         [HttpGet]
         public Task<IActionResult> LichSuDangKy() => LichSu();
+
+        // GET: DangKyHoc/DangKyClass (Hỗ trợ URL alias)
+        [HttpGet]
+        public Task<IActionResult> DangKyClass(int? id, int? maLop) => DangKy(maLop ?? id);
     }
 }
