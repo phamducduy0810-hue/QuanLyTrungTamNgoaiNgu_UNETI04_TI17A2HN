@@ -1,0 +1,126 @@
+@*
+    Họ và tên: Diêm Đức Hùng
+    Mã sinh viên: 23103100099
+    Nội dung thực hiện: Module 3 - Cập nhật thông tin giảng viên
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien
+
+@{
+    ViewData["Title"] = "Cập nhật Giảng viên";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center"> 
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="bi bi-pencil-square me-2"></i>CẬP NHẬT THÔNG TIN GIẢNG VIÊN: @Model.HoTen
+                    </h4>
+                    <small>Mã giảng viên: #@Model.MaGiangVien | Module 3 - Diêm Đức Hùng (23103100099)</small>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="MaGiangVien" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-3">
+                            <!-- Họ và tên -->
+                            <div class="col-md-6">
+                                <label asp-for="HoTen" class="form-label fw-bold"></label> <span class="text-danger">*</span>
+                                <input asp-for="HoTen" class="form-control" />
+                                <span asp-validation-for="HoTen" class="text-danger"></span>
+                            </div>
+
+                            <!-- Giới tính -->
+                            <div class="col-md-3">
+                                <label asp-for="GioiTinh" class="form-label fw-bold"></label>
+                                <select asp-for="GioiTinh" class="form-select">
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                                <span asp-validation-for="GioiTinh" class="text-danger"></span>
+                            </div>
+
+                            <!-- Ngày sinh -->
+                            <div class="col-md-3">
+                                <label asp-for="NgaySinh" class="form-label fw-bold"></label>
+                                <input asp-for="NgaySinh" type="date" class="form-control" />
+                                <span asp-validation-for="NgaySinh" class="text-danger"></span>
+                            </div>
+
+                            <!-- Số điện thoại -->
+                            <div class="col-md-6">
+                                <label asp-for="SoDienThoai" class="form-label fw-bold"></label> <span class="text-danger">*</span>
+                                <input asp-for="SoDienThoai" class="form-control" />
+                                <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label fw-bold"></label> <span class="text-danger">*</span>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <!-- Trình độ / Học vị -->
+                            <div class="col-md-6">
+                                <label asp-for="TrinhDo" class="form-label fw-bold"></label>
+                                <input asp-for="TrinhDo" class="form-control" />
+                                <span asp-validation-for="TrinhDo" class="text-danger"></span>
+                            </div>
+
+                            <!-- Chuyên môn -->
+                            <div class="col-md-6">
+                                <label asp-for="ChuyenMon" class="form-label fw-bold"></label>
+                                <input asp-for="ChuyenMon" class="form-control" />
+                                <span asp-validation-for="ChuyenMon" class="text-danger"></span>
+                            </div>
+
+                            <!-- Địa chỉ -->
+                            <div class="col-12">
+                                <label asp-for="DiaChi" class="form-label fw-bold"></label>
+                                <input asp-for="DiaChi" class="form-control" />
+                                <span asp-validation-for="DiaChi" class="text-danger"></span>
+                            </div>
+
+                            <!-- Ghi chú -->
+                            <div class="col-12">
+                                <label asp-for="GhiChu" class="form-label fw-bold"></label>
+                                <textarea asp-for="GhiChu" class="form-control" rows="2"></textarea>
+                                <span asp-validation-for="GhiChu" class="text-danger"></span>
+                            </div>
+
+                            <!-- Trạng thái -->
+                            <div class="col-12">
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" asp-for="TrangThai" id="switchTrangThai" />
+                                    <label class="form-check-label fw-bold" for="switchTrangThai">
+                                        Đang trong biên chế giảng dạy (Sẵn sàng nhận lớp)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-arrow-left me-1"></i> Hủy & Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5 fw-bold">
+                                <i class="bi bi-check-circle me-1"></i> Cập nhật
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

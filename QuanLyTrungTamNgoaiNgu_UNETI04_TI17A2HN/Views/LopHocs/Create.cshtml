@@ -35,6 +35,14 @@
                             <span asp-validation-for="MaKhoaHoc" class="text-danger"></span>
                         </div>
 
+                        <div class="mb-3">
+                            <label asp-for="MaGiangVien" class="form-label fw-bold"></label>
+                            <select asp-for="MaGiangVien" class="form-select" asp-items="ViewBag.MaGiangVien">
+                                <option value="">-- Chưa phân công giảng viên --</option>
+                            </select>
+                            <span asp-validation-for="MaGiangVien" class="text-danger"></span>
+                        </div>
+
                         
                         <div class="row mb-3">
                             <div class="col-md-6">

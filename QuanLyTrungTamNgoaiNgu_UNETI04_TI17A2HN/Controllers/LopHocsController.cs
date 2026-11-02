@@ -24,14 +24,94 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
             _context = context;
         }
 
+        // Helper phân tích và chuyển đổi chuỗi học phí linh hoạt (hỗ trợ số thuần, định dạng VN 1.000.000, 1,000,000, kèm đ/VNĐ)
+        public static decimal? ParseFee(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return null;
+            
+            // Giữ lại chỉ các chữ số, dấu chấm và dấu phẩy, loại bỏ mọi ký hiệu tiền tệ hoặc khoảng trắng
+            var sb = new System.Text.StringBuilder();
+            foreach (char c in input)
+            {
+                if (char.IsDigit(c) || c == '.' || c == ',')
+                {
+                    sb.Append(c);
+                }
+            }
+            string s = sb.ToString();
+            if (string.IsNullOrWhiteSpace(s)) return null;
+
+            if (s.Contains('.') && s.Contains(','))
+            {
+                if (s.LastIndexOf(',') > s.LastIndexOf('.'))
+                {
+                    // Định dạng VN: 2.000.000,00 -> 2000000.00
+                    s = s.Replace(".", "").Replace(',', '.');
+                }
+                else
+                {
+                    // Định dạng Quốc tế: 2,000,000.00 -> 2000000.00
+                    s = s.Replace(",", "");
+                }
+            }
+            else if (s.Contains('.'))
+            {
+                var parts = s.Split('.');
+                if (parts.Length > 2)
+                {
+                    s = s.Replace(".", "");
+                }
+                else if (parts.Length == 2)
+                {
+                    if (parts[1].Length == 3 && parts[0].Length <= 3)
+                    {
+                        s = s.Replace(".", "");
+                    }
+                    else if (parts[1].Length <= 2)
+                    {
+                        // Giữ dấu chấm thập phân
+                    }
+                    else
+                    {
+                        s = s.Replace(".", "");
+                    }
+                }
+            }
+            else if (s.Contains(','))
+            {
+                var parts = s.Split(',');
+                if (parts.Length > 2)
+                {
+                    s = s.Replace(",", "");
+                }
+                else if (parts.Length == 2)
+                {
+                    if (parts[1].Length <= 2)
+                    {
+                        s = parts[0] + "." + parts[1];
+                    }
+                    else
+                    {
+                        s = s.Replace(",", "");
+                    }
+                }
+            }
+
+            if (decimal.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal result))
+            {
+                return result;
+            }
+            return null;
+        }
+
         // GET: LopHocs
         public async Task<IActionResult> Index(
             string? searchKeyword,
             int? maKhoaHoc,
             string? ngoaiNgu,
             string? trangThai,
-            decimal? giaTu,
-            decimal? giaDen,
+            string? giaTu,
+            string? giaDen,
             string? sortOrder,
             int currentPage = 1,
             int? page = null)
@@ -40,17 +120,28 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
             int p = page ?? currentPage;
             if (p < 1) p = 1;
 
-            var query = _context.LopHocs.Include(l => l.KhoaHoc).AsQueryable();
+            // Xử lý chuyển đổi khoảng học phí (Từ - Đến) với parser hỗ trợ mọi định dạng
+            decimal? minPrice = ParseFee(giaTu);
+            decimal? maxPrice = ParseFee(giaDen);
+
+            // Tự động hoán đổi nếu người dùng nhập ngược (VD: Từ 5 triệu - Đến 2 triệu)
+            if (minPrice.HasValue && maxPrice.HasValue && minPrice.Value > maxPrice.Value)
+            {
+                (minPrice, maxPrice) = (maxPrice, minPrice);
+            }
+
+            var query = _context.LopHocs.Include(l => l.KhoaHoc).Include(l => l.GiangVien).AsQueryable();
 
             // 1. Tìm kiếm theo Tên lớp hoặc Tên khóa học (LINQ)
             if (!string.IsNullOrWhiteSpace(searchKeyword))
             {
-                string kw = searchKeyword.Trim();
-                query = query.Where(l => l.TenLop.Contains(kw) || (l.KhoaHoc != null && l.KhoaHoc.TenKhoaHoc.Contains(kw)));
+                string kw = searchKeyword.Trim().ToLower();
+                query = query.Where(l => l.TenLop.ToLower().Contains(kw) || 
+                                        (l.KhoaHoc != null && l.KhoaHoc.TenKhoaHoc.ToLower().Contains(kw)));
             }
 
             // 2. Lọc theo Khóa học
-            if (maKhoaHoc.HasValue)
+            if (maKhoaHoc.HasValue && maKhoaHoc.Value > 0)
             {
                 query = query.Where(l => l.MaKhoaHoc == maKhoaHoc.Value);
             }
@@ -58,26 +149,28 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
             // 3. Lọc theo Ngoại ngữ
             if (!string.IsNullOrWhiteSpace(ngoaiNgu))
             {
-                query = query.Where(l => l.KhoaHoc != null && l.KhoaHoc.NgoaiNgu == ngoaiNgu);
+                string nn = ngoaiNgu.Trim();
+                query = query.Where(l => l.KhoaHoc != null && (l.KhoaHoc.NgoaiNgu == nn || l.KhoaHoc.NgoaiNgu.Contains(nn)));
             }
 
             // 4. Lọc theo Trạng thái lớp
             if (!string.IsNullOrWhiteSpace(trangThai))
             {
-                query = query.Where(l => l.TrangThai == trangThai);
+                string tt = trangThai.Trim();
+                query = query.Where(l => l.TrangThai == tt);
             }
 
             // 5. Lọc theo Khoảng học phí (Từ - Đến)
-            if (giaTu.HasValue)
+            if (minPrice.HasValue)
             {
-                query = query.Where(l => l.HocPhi >= giaTu.Value);
+                query = query.Where(l => l.HocPhi >= minPrice.Value);
             }
-            if (giaDen.HasValue)
+            if (maxPrice.HasValue)
             {
-                query = query.Where(l => l.HocPhi <= giaDen.Value);
+                query = query.Where(l => l.HocPhi <= maxPrice.Value);
             }
 
-            // 6. Sắp xếp (6 tiêu chí: Tên A-Z, Tên Z-A, Học phí thấp-cao, Học phí cao-thấp, Khai giảng tăng, Khai giảng giảm)
+            // 6. Sắp xếp (6 tiêu chí chuẩn đề bài: Tên A-Z, Tên Z-A, Học phí thấp-cao, Học phí cao-thấp, Khai giảng tăng, Khai giảng giảm)
             switch (sortOrder)
             {
                 case "name_desc":
@@ -112,17 +205,28 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 MaKhoaHoc = maKhoaHoc,
                 NgoaiNgu = ngoaiNgu,
                 TrangThai = trangThai,
-                GiaTu = giaTu,
-                GiaDen = giaDen,
+                GiaTu = minPrice,
+                GiaDen = maxPrice,
                 SortOrder = sortOrder ?? "name_asc",
                 CurrentPage = p,
                 PageSize = pageSize,
                 TotalItems = totalItems
             };
 
-            // Dữ liệu dropdown lọc
-            ViewBag.KhoaHocList = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", maKhoaHoc);
-            ViewBag.NgoaiNguList = new SelectList(await _context.KhoaHocs.Where(k => !string.IsNullOrEmpty(k.NgoaiNgu)).Select(k => k.NgoaiNgu).Distinct().ToListAsync(), ngoaiNgu);
+            // Dữ liệu dropdown lọc phục vụ View
+            var dsKhoaHoc = await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync();
+            var dsNgoaiNgu = await _context.KhoaHocs
+                .Where(k => !string.IsNullOrEmpty(k.NgoaiNgu))
+                .Select(k => k.NgoaiNgu)
+                .Distinct()
+                .ToListAsync();
+
+            ViewBag.KhoaHocs = dsKhoaHoc;
+            ViewBag.NgoaiNgus = dsNgoaiNgu;
+            ViewBag.TrangThais = new List<string> { "Sắp mở", "Đang tuyển sinh", "Đang học", "Đã kết thúc" };
+
+            ViewBag.KhoaHocList = new SelectList(dsKhoaHoc, "MaKhoaHoc", "TenKhoaHoc", maKhoaHoc);
+            ViewBag.NgoaiNguList = new SelectList(dsNgoaiNgu, ngoaiNgu);
             ViewBag.TrangThaiList = new SelectList(new List<string> { "Sắp mở", "Đang tuyển sinh", "Đang học", "Đã kết thúc" }, trangThai);
 
             return View(viewModel);
@@ -138,6 +242,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
             var lopHoc = await _context.LopHocs
                 .Include(l => l.KhoaHoc)
+                .Include(l => l.GiangVien)
                 .Include(l => l.DangKyHocs)
                 .FirstOrDefaultAsync(m => m.MaLop == id);
             if (lopHoc == null)
@@ -153,6 +258,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         public async Task<IActionResult> Create()
         {
             ViewData["MaKhoaHoc"] = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc");
+            ViewData["MaGiangVien"] = new SelectList(await _context.GiangViens.Where(g => g.TrangThai).OrderBy(g => g.HoTen).ToListAsync(), "MaGiangVien", "HoTen");
             var model = new LopHoc
             {
                 NgayKhaiGiang = DateTime.Today.AddDays(7),
@@ -167,7 +273,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AuthorizeRole("Admin")]
-        public async Task<IActionResult> Create([Bind("MaLop,TenLop,MaKhoaHoc,NgayKhaiGiang,LichHoc,PhongHoc,SoLuongToiDa,HocPhi,TrangThai")] LopHoc lopHoc)
+        public async Task<IActionResult> Create([Bind("MaLop,TenLop,MaKhoaHoc,MaGiangVien,NgayKhaiGiang,LichHoc,PhongHoc,SoLuongToiDa,HocPhi,TrangThai")] LopHoc lopHoc)
         {
             if (ModelState.IsValid)
             {
@@ -177,6 +283,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["MaKhoaHoc"] = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", lopHoc.MaKhoaHoc);
+            ViewData["MaGiangVien"] = new SelectList(await _context.GiangViens.Where(g => g.TrangThai).OrderBy(g => g.HoTen).ToListAsync(), "MaGiangVien", "HoTen", lopHoc.MaGiangVien);
             return View(lopHoc);
         }
 
@@ -195,6 +302,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 return NotFound();
             }
             ViewData["MaKhoaHoc"] = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", lopHoc.MaKhoaHoc);
+            ViewData["MaGiangVien"] = new SelectList(await _context.GiangViens.Where(g => g.TrangThai).OrderBy(g => g.HoTen).ToListAsync(), "MaGiangVien", "HoTen", lopHoc.MaGiangVien);
             return View(lopHoc);
         }
 
@@ -202,7 +310,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AuthorizeRole("Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("MaLop,TenLop,MaKhoaHoc,NgayKhaiGiang,LichHoc,PhongHoc,SoLuongToiDa,HocPhi,TrangThai")] LopHoc lopHoc)
+        public async Task<IActionResult> Edit(int id, [Bind("MaLop,TenLop,MaKhoaHoc,MaGiangVien,NgayKhaiGiang,LichHoc,PhongHoc,SoLuongToiDa,HocPhi,TrangThai")] LopHoc lopHoc)
         {
             if (id != lopHoc.MaLop)
             {
@@ -231,6 +339,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["MaKhoaHoc"] = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", lopHoc.MaKhoaHoc);
+            ViewData["MaGiangVien"] = new SelectList(await _context.GiangViens.Where(g => g.TrangThai).OrderBy(g => g.HoTen).ToListAsync(), "MaGiangVien", "HoTen", lopHoc.MaGiangVien);
             return View(lopHoc);
         }
 

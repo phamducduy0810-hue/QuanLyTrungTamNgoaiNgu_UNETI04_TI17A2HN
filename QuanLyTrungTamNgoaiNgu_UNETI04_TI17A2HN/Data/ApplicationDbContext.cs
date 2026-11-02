@@ -15,6 +15,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data
         public DbSet<LopHoc> LopHocs { get; set; }
         public DbSet<HocVien> HocViens { get; set; }
         public DbSet<DangKyHoc> DangKyHocs { get; set; }
+        public DbSet<GiangVien> GiangViens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,12 +33,25 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data
                 .HasForeignKey<HocVien>(h => h.MaTaiKhoan)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<GiangVien>()
+                .HasOne(g => g.TaiKhoan)
+                .WithOne(t => t.GiangVien)
+                .HasForeignKey<GiangVien>(g => g.MaTaiKhoan)
+                .OnDelete(DeleteBehavior.SetNull);
+
             
             modelBuilder.Entity<LopHoc>()
                 .HasOne(l => l.KhoaHoc)
                 .WithMany(k => k.LopHocs)
                 .HasForeignKey(l => l.MaKhoaHoc)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            
+            modelBuilder.Entity<LopHoc>()
+                .HasOne(l => l.GiangVien)
+                .WithMany(g => g.LopHocs)
+                .HasForeignKey(l => l.MaGiangVien)
+                .OnDelete(DeleteBehavior.SetNull);
 
             
             modelBuilder.Entity<DangKyHoc>()

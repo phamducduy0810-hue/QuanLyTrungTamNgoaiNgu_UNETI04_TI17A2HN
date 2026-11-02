@@ -13,9 +13,10 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data
             // Tự động tạo cơ sở dữ liệu nếu chưa có
             context.Database.EnsureCreated();
 
-            // Nếu đã có lớp học thì không seed lại
+            // Nếu đã có lớp học thì kiểm tra seed giảng viên bổ sung nếu chưa có
             if (context.LopHocs.Any())
             {
+                SeedGiangViens(context);
                 return;
             }
 
@@ -324,6 +325,79 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data
 
             context.DangKyHocs.AddRange(dangKyList);
             context.SaveChanges();
+
+            SeedGiangViens(context);
+        }
+
+        private static void SeedGiangViens(ApplicationDbContext context)
+        {
+            var gvData = new[]
+            {
+                ("gv_nam", "123456", "ThS. Nguyễn Hoàng Nam", "nam.nguyen@uneti.edu.vn", "0981234567", "Nam", new DateTime(1988, 5, 12), "Thạc sĩ TESOL", "IELTS & Tiếng Anh Giao Tiếp", "Hai Bà Trưng, Hà Nội", "IELTS 8.5, 8 năm kinh nghiệm giảng dạy đại học"),
+                ("gv_ngoc", "123456", "TS. Trần Thị Bích Ngọc", "ngoc.tran@uneti.edu.vn", "0972345678", "Nữ", new DateTime(1985, 10, 24), "Tiến sĩ Ngôn ngữ", "Tiếng Trung Thương Mại & HSK", "Cầu Giấy, Hà Nội", "HSK 6, cựu du học sinh ĐH Bắc Kinh"),
+                ("gv_tuan", "123456", "ThS. Lê Minh Tuấn", "tuan.le@uneti.edu.vn", "0913456789", "Nam", new DateTime(1991, 3, 18), "Thạc sĩ Ngôn ngữ Nhật", "Tiếng Nhật JLPT N3 - N2", "Đống Đa, Hà Nội", "JLPT N1, từng tu nghiệp 4 năm tại Tokyo"),
+                ("gv_thao", "123456", "Cô Phạm Phương Thảo", "thao.pham@uneti.edu.vn", "0934567890", "Nữ", new DateTime(1993, 8, 30), "Cử nhân Sư phạm Tiếng Hàn", "Tiếng Hàn Giao Tiếp & TOPIK", "Thanh Xuân, Hà Nội", "TOPIK 6, nhiệt tình, phương pháp dạy sinh động"),
+                ("gv_huy", "123456", "ThS. Đỗ Quang Huy", "huy.do@uneti.edu.vn", "0945678901", "Nam", new DateTime(1989, 12, 5), "Thạc sĩ Ngôn ngữ Anh", "TOEIC 4 kỹ năng", "Hoàng Mai, Hà Nội", "TOEIC 980/990, chuyên gia luyện thi chứng chỉ")
+            };
+
+            var giangViens = new List<GiangVien>();
+            foreach (var item in gvData)
+            {
+                var tk = context.TaiKhoans.FirstOrDefault(t => t.TenDangNhap == item.Item1);
+                if (tk == null)
+                {
+                    tk = new TaiKhoan
+                    {
+                        TenDangNhap = item.Item1,
+                        MatKhau = item.Item2,
+                        HoTen = item.Item3,
+                        Email = item.Item4,
+                        VaiTro = "GiangVien",
+                        TrangThai = true
+                    };
+                    context.TaiKhoans.Add(tk);
+                    context.SaveChanges();
+                }
+
+                var gv = context.GiangViens.FirstOrDefault(g => g.Email == item.Item4);
+                if (gv == null)
+                {
+                    gv = new GiangVien
+                    {
+                        MaTaiKhoan = tk.MaTaiKhoan,
+                        HoTen = item.Item3,
+                        Email = item.Item4,
+                        SoDienThoai = item.Item5,
+                        GioiTinh = item.Item6,
+                        NgaySinh = item.Item7,
+                        TrinhDo = item.Item8,
+                        ChuyenMon = item.Item9,
+                        DiaChi = item.Item10,
+                        GhiChu = item.Item11,
+                        TrangThai = true
+                    };
+                    context.GiangViens.Add(gv);
+                    context.SaveChanges();
+                }
+                else if (gv.MaTaiKhoan == null)
+                {
+                    gv.MaTaiKhoan = tk.MaTaiKhoan;
+                    context.SaveChanges();
+                }
+                giangViens.Add(gv);
+            }
+
+            // Tự động phân công giảng viên cho các lớp mẫu nếu lớp chưa có giảng viên
+            var lops = context.LopHocs.ToList();
+            if (lops.Count >= 5 && giangViens.Count >= 5)
+            {
+                if (lops[0].MaGiangVien == null) lops[0].MaGiangVien = giangViens[0].MaGiangVien;
+                if (lops.Count > 1 && lops[1].MaGiangVien == null) lops[1].MaGiangVien = giangViens[0].MaGiangVien;
+                if (lops.Count > 2 && lops[2].MaGiangVien == null) lops[2].MaGiangVien = giangViens[1].MaGiangVien;
+                if (lops.Count > 3 && lops[3].MaGiangVien == null) lops[3].MaGiangVien = giangViens[2].MaGiangVien;
+                if (lops.Count > 4 && lops[4].MaGiangVien == null) lops[4].MaGiangVien = giangViens[3].MaGiangVien;
+                context.SaveChanges();
+            }
         }
     }
 }

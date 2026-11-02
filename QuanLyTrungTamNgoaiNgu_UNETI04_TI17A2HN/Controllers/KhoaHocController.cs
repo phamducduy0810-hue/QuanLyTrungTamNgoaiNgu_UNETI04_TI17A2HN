@@ -20,31 +20,99 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         }
 
         // GET: KhoaHoc
-        public async Task<IActionResult> Index(string? searchNgoaiNgu, string? searchCapDo, string? searchKeyword)
+        public async Task<IActionResult> Index(
+            string? searchNgoaiNgu, 
+            string? searchCapDo, 
+            string? searchKeyword,
+            string? giaTu,
+            string? giaDen,
+            bool? trangThai,
+            string? sortOrder)
         {
             IQueryable<KhoaHoc> query = _context.KhoaHocs.Include(k => k.LopHocs);
 
+            // 1. Lọc theo Ngoại ngữ
             if (!string.IsNullOrWhiteSpace(searchNgoaiNgu))
             {
-                query = query.Where(k => k.NgoaiNgu == searchNgoaiNgu);
+                string nn = searchNgoaiNgu.Trim();
+                query = query.Where(k => k.NgoaiNgu == nn || k.NgoaiNgu.Contains(nn));
             }
 
+            // 2. Lọc theo Cấp độ đào tạo
             if (!string.IsNullOrWhiteSpace(searchCapDo))
             {
-                query = query.Where(k => k.CapDo == searchCapDo);
+                string cd = searchCapDo.Trim();
+                query = query.Where(k => k.CapDo == cd);
             }
 
+            // 3. Tìm kiếm theo từ khóa (Tên khóa học hoặc Mô tả)
             if (!string.IsNullOrWhiteSpace(searchKeyword))
             {
                 string kw = searchKeyword.Trim().ToLower();
-                query = query.Where(k => k.TenKhoaHoc.ToLower().Contains(kw) || k.MoTa.ToLower().Contains(kw));
+                query = query.Where(k => k.TenKhoaHoc.ToLower().Contains(kw) || 
+                                        (k.MoTa != null && k.MoTa.ToLower().Contains(kw)));
+            }
+
+            // 4. Lọc theo Khoảng học phí (Từ - Đến) với parser hỗ trợ đa định dạng
+            decimal? minPrice = LopHocsController.ParseFee(giaTu);
+            decimal? maxPrice = LopHocsController.ParseFee(giaDen);
+
+            if (minPrice.HasValue && maxPrice.HasValue && minPrice.Value > maxPrice.Value)
+            {
+                (minPrice, maxPrice) = (maxPrice, minPrice);
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(k => k.HocPhi >= minPrice.Value);
+            }
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(k => k.HocPhi <= maxPrice.Value);
+            }
+
+            // 5. Lọc theo Trạng thái khóa học
+            if (trangThai.HasValue)
+            {
+                query = query.Where(k => k.TrangThai == trangThai.Value);
+            }
+
+            // 6. Sắp xếp danh sách
+            switch (sortOrder)
+            {
+                case "price_asc":
+                    query = query.OrderBy(k => k.HocPhi);
+                    break;
+                case "price_desc":
+                    query = query.OrderByDescending(k => k.HocPhi);
+                    break;
+                case "name_asc":
+                    query = query.OrderBy(k => k.TenKhoaHoc);
+                    break;
+                case "name_desc":
+                    query = query.OrderByDescending(k => k.TenKhoaHoc);
+                    break;
+                case "sessions_desc":
+                    query = query.OrderByDescending(k => k.SoBuoi);
+                    break;
+                case "sessions_asc":
+                    query = query.OrderBy(k => k.SoBuoi);
+                    break;
+                default:
+                    query = query.OrderByDescending(k => k.MaKhoaHoc);
+                    break;
             }
 
             ViewBag.SearchNgoaiNgu = searchNgoaiNgu;
             ViewBag.SearchCapDo = searchCapDo;
             ViewBag.SearchKeyword = searchKeyword;
+            ViewBag.GiaTu = minPrice;
+            ViewBag.GiaDen = maxPrice;
+            ViewBag.TrangThai = trangThai;
+            ViewBag.SortOrder = sortOrder;
 
-            var dsKhoaHoc = await query.OrderByDescending(k => k.MaKhoaHoc).ToListAsync();
+            var dsKhoaHoc = await query.ToListAsync();
+            ViewBag.TotalCount = dsKhoaHoc.Count;
             return View(dsKhoaHoc);
         }
 

@@ -45,7 +45,7 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 .Include(d => d.HocVien)
                 .Include(d => d.LopHoc)
                     .ThenInclude(l => l!.KhoaHoc)
-                .AsQueryable();
+                .AsQueryable();// Tạo truy vấn có thể bổ sung điều kiện
 
             if (!string.IsNullOrWhiteSpace(tuKhoa))
             {

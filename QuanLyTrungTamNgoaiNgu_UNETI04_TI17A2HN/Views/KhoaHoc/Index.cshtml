@@ -170,67 +170,238 @@
 
 <!-- KHUNG LỌC & TÌM KIẾM HIỆN ĐẠI -->
 <div class="card-custom p-4 mb-4 border-0 shadow-sm rounded-4">
-    <form method="get" asp-action="Index" class="row g-3 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label fw-bold small text-secondary mb-1">
-                <i class="fa-solid fa-earth-asia text-primary me-1"></i> Ngoại ngữ
-            </label>
-            <select name="searchNgoaiNgu" class="form-select bg-light border-0 py-2">
-                <option value="">-- Tất cả ngoại ngữ --</option>
-                <option value="Tiếng Anh" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Anh" ? "selected" : null)">Tiếng Anh</option>
-                <option value="Tiếng Trung" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Trung" ? "selected" : null)">Tiếng Trung</option>
-                <option value="Tiếng Nhật" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Nhật" ? "selected" : null)">Tiếng Nhật</option>
-                <option value="Tiếng Hàn" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Hàn" ? "selected" : null)">Tiếng Hàn</option>
-            </select>
-        </div>
+<<<<<<< HEAD
+    <form method="get" asp-action="Index">
+        <div class="row g-3 align-items-end">
+            <!-- 1. NGOẠI NGỮ -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">
+                    <i class="fa-solid fa-earth-asia text-primary me-1"></i> Ngoại ngữ
+                </label>
+                <select name="searchNgoaiNgu" class="form-select bg-light border-0 py-2">
+                    <option value="">-- Tất cả ngoại ngữ --</option>
+                    <option value="Tiếng Anh" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Anh" ? "selected" : null)">Tiếng Anh</option>
+                    <option value="Tiếng Trung" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Trung" ? "selected" : null)">Tiếng Trung</option>
+                    <option value="Tiếng Nhật" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Nhật" ? "selected" : null)">Tiếng Nhật</option>
+                    <option value="Tiếng Hàn" selected="@(ViewBag.SearchNgoaiNgu == "Tiếng Hàn" ? "selected" : null)">Tiếng Hàn</option>
+                </select>
+            </div>
 
-        <div class="col-md-3">
-            <label class="form-label fw-bold small text-secondary mb-1">
-                <i class="fa-solid fa-layer-group text-primary me-1"></i> Cấp độ đào tạo
-            </label>
-            <select name="searchCapDo" class="form-select bg-light border-0 py-2">
-                <option value="">-- Tất cả cấp độ --</option>
-                <option value="Sơ cấp" selected="@(ViewBag.SearchCapDo == "Sơ cấp" ? "selected" : null)">Sơ cấp (Căn bản)</option>
-                <option value="Trung cấp" selected="@(ViewBag.SearchCapDo == "Trung cấp" ? "selected" : null)">Trung cấp (Giao tiếp/Thi)</option>
-                <option value="Cao cấp" selected="@(ViewBag.SearchCapDo == "Cao cấp" ? "selected" : null)">Cao cấp (Chuyên sâu)</option>
-            </select>
-        </div>
+            <!-- 2. CẤP ĐỘ -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">
+                    <i class="fa-solid fa-layer-group text-primary me-1"></i> Cấp độ đào tạo
+                </label>
+                <select name="searchCapDo" class="form-select bg-light border-0 py-2">
+                    <option value="">-- Tất cả cấp độ --</option>
+                    <option value="Sơ cấp" selected="@(ViewBag.SearchCapDo == "Sơ cấp" ? "selected" : null)">Sơ cấp (Căn bản)</option>
+                    <option value="Trung cấp" selected="@(ViewBag.SearchCapDo == "Trung cấp" ? "selected" : null)">Trung cấp (Giao tiếp/Thi)</option>
+                    <option value="Cao cấp" selected="@(ViewBag.SearchCapDo == "Cao cấp" ? "selected" : null)">Cao cấp (Chuyên sâu)</option>
+                </select>
+            </div>
 
-        <div class="col-md-4">
-            <label class="form-label fw-bold small text-secondary mb-1">
-                <i class="fa-solid fa-magnifying-glass text-primary me-1"></i> Từ khóa tìm kiếm
-            </label>
-            <div class="input-group">
+            <!-- 3. TỪ KHÓA TÌM KIẾM -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">
+                    <i class="fa-solid fa-magnifying-glass text-primary me-1"></i> Từ khóa tìm kiếm
+                </label>
                 <input type="text" name="searchKeyword" value="@ViewBag.SearchKeyword" class="form-control bg-light border-0 py-2" placeholder="Tên khóa học, chứng chỉ..." />
+            </div>
+
+            <!-- 4. TRẠNG THÁI KHÓA HỌC -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">
+                    <i class="fa-solid fa-toggle-on text-primary me-1"></i> Trạng thái
+                </label>
+                <select name="trangThai" class="form-select bg-light border-0 py-2">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="true" selected="@(ViewBag.TrangThai == true ? "selected" : null)">Đang mở tuyển sinh</option>
+                    <option value="false" selected="@(ViewBag.TrangThai == false ? "selected" : null)">Tạm dừng</option>
+                </select>
+            </div>
+
+            <!-- 5. HỌC PHÍ TỪ -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">
+                    <i class="fa-solid fa-money-bill-wave text-success me-1"></i> Học phí từ (VNĐ)
+                </label>
+                <input type="text" 
+                       inputmode="numeric" 
+                       name="giaTu" 
+                       value="@(ViewBag.GiaTu != null ? ((decimal)ViewBag.GiaTu).ToString("N0") : "")" 
+                       class="form-control bg-light border-0 py-2" 
+                       placeholder="VD: 1.000.000 hoặc 1000000" />
+            </div>
+
+            <!-- 6. HỌC PHÍ ĐẾN -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">
+                    <i class="fa-solid fa-money-bill-wave text-danger me-1"></i> Học phí đến (VNĐ)
+                </label>
+                <input type="text" 
+                       inputmode="numeric" 
+                       name="giaDen" 
+                       value="@(ViewBag.GiaDen != null ? ((decimal)ViewBag.GiaDen).ToString("N0") : "")" 
+                       class="form-control bg-light border-0 py-2" 
+                       placeholder="VD: 5.000.000 hoặc 5000000" />
+            </div>
+
+            <!-- 7. SẮP XẾP -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">
+                    <i class="fa-solid fa-arrow-down-short-wide text-primary me-1"></i> Sắp xếp theo
+                </label>
+                <select name="sortOrder" class="form-select bg-light border-0 py-2">
+                    <option value="" selected="@(string.IsNullOrEmpty(ViewBag.SortOrder))">Mới nhất (Mặc định)</option>
+                    <option value="price_asc" selected="@(ViewBag.SortOrder == "price_asc")">Học phí Thấp → Cao</option>
+                    <option value="price_desc" selected="@(ViewBag.SortOrder == "price_desc")">Học phí Cao → Thấp</option>
+                    <option value="name_asc" selected="@(ViewBag.SortOrder == "name_asc")">Tên khóa học A → Z</option>
+                    <option value="name_desc" selected="@(ViewBag.SortOrder == "name_desc")">Tên khóa học Z → A</option>
+                    <option value="sessions_desc" selected="@(ViewBag.SortOrder == "sessions_desc")">Số buổi Nhiều → Ít</option>
+                </select>
+            </div>
+
+            <!-- 8. NÚT ÁP DỤNG & RESET -->
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary fw-bold w-100 py-2 rounded-3 shadow-sm">
+                    <i class="fa-solid fa-filter me-1"></i>Áp dụng Lọc
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary py-2 rounded-3 px-3" title="Đặt lại toàn bộ bộ lọc">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </a>
             </div>
         </div>
 
-        <div class="col-md-2 d-flex gap-2">
-            <button type="submit" class="btn btn-primary fw-bold w-100 py-2 rounded-3 shadow-sm">
-                <i class="fa-solid fa-filter me-1"></i>Lọc
-            </button>
-            <a asp-action="Index" class="btn btn-outline-secondary py-2 rounded-3 px-3" title="Đặt lại bộ lọc">
-                <i class="fa-solid fa-rotate-left"></i>
-            </a>
-        </div>
+        @{
+            bool hasActiveCourseFilters = !string.IsNullOrWhiteSpace(ViewBag.SearchNgoaiNgu) ||
+                                          !string.IsNullOrWhiteSpace(ViewBag.SearchCapDo) ||
+                                          !string.IsNullOrWhiteSpace(ViewBag.SearchKeyword) ||
+                                          ViewBag.GiaTu != null ||
+                                          ViewBag.GiaDen != null ||
+                                          ViewBag.TrangThai != null ||
+                                          !string.IsNullOrEmpty(ViewBag.SortOrder);
+        }
+
+        @if (hasActiveCourseFilters)
+        {
+            <div class="mt-3 pt-3 border-top d-flex flex-wrap align-items-center gap-2">
+                <span class="small text-muted fw-bold me-1">
+                    <i class="fa-solid fa-check-double text-success me-1"></i>Điều kiện đang lọc (@(ViewBag.TotalCount ?? 0) kết quả):
+                </span>
+                @if (!string.IsNullOrWhiteSpace(ViewBag.SearchKeyword))
+                {
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+                        Từ khóa: "@ViewBag.SearchKeyword"
+                    </span>
+                }
+                @if (!string.IsNullOrWhiteSpace(ViewBag.SearchNgoaiNgu))
+                {
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">
+                        Ngoại ngữ: @ViewBag.SearchNgoaiNgu
+                    </span>
+                }
+                @if (!string.IsNullOrWhiteSpace(ViewBag.SearchCapDo))
+                {
+                    <span class="badge bg-info-subtle text-dark border border-info-subtle px-3 py-2 rounded-pill">
+                        Cấp độ: @ViewBag.SearchCapDo
+                    </span>
+                }
+                @if (ViewBag.TrangThai != null)
+                {
+                    bool st = (bool)ViewBag.TrangThai;
+                    <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-3 py-2 rounded-pill">
+                        Trạng thái: @(st ? "Đang mở" : "Tạm dừng")
+                    </span>
+                }
+                @if (ViewBag.GiaTu != null || ViewBag.GiaDen != null)
+                {
+                    decimal? gt = ViewBag.GiaTu;
+                    decimal? gd = ViewBag.GiaDen;
+                    string pText = "";
+                    if (gt.HasValue && gd.HasValue)
+                    {
+                        pText = $"Học phí: {gt.Value:N0}đ - {gd.Value:N0}đ";
+                    }
+                    else if (gt.HasValue)
+                    {
+                        pText = $"Học phí từ: {gt.Value:N0}đ";
+                    }
+                    else
+                    {
+                        pText = $"Học phí đến: {gd.Value:N0}đ";
+                    }
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                        @pText
+                    </span>
+                }
+                @if (!string.IsNullOrEmpty(ViewBag.SortOrder))
+                {
+                    <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill">
+                        Sắp xếp: @ViewBag.SortOrder
+                    </span>
+                }
+                <a asp-action="Index" class="btn btn-link btn-sm text-danger text-decoration-none ms-auto fw-semibold">
+                    <i class="fa-solid fa-xmark me-1"></i>Xóa tất cả bộ lọc
+                </a>
+            </div>
+        }
     </form>
 
-    <!-- QUICK LANGUAGE PILLS -->
+    <!-- QUICK LANGUAGE PILLS - KẾT HỢP ĐỒNG BỘ CÙNG CÁC ĐIỀU KIỆN LỌC HIỆN TẠI -->
     <div class="d-flex flex-wrap gap-2 pt-3 mt-3 border-top align-items-center">
         <span class="small text-muted fw-bold me-2"><i class="fa-solid fa-bolt text-warning me-1"></i>Khám phá nhanh:</span>
-        <a asp-action="Index" class="filter-pill @(string.IsNullOrEmpty(ViewBag.SearchNgoaiNgu) ? "active" : "")">
+        <a asp-action="Index" 
+           asp-route-searchCapDo="@ViewBag.SearchCapDo"
+           asp-route-searchKeyword="@ViewBag.SearchKeyword"
+           asp-route-giaTu="@(ViewBag.GiaTu != null ? ((decimal)ViewBag.GiaTu).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-giaDen="@(ViewBag.GiaDen != null ? ((decimal)ViewBag.GiaDen).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-trangThai="@ViewBag.TrangThai"
+           asp-route-sortOrder="@ViewBag.SortOrder"
+           class="filter-pill @(string.IsNullOrEmpty(ViewBag.SearchNgoaiNgu) ? "active" : "")">
             Tất cả
         </a>
-        <a asp-action="Index" asp-route-searchNgoaiNgu="Tiếng Anh" class="filter-pill @(ViewBag.SearchNgoaiNgu == "Tiếng Anh" ? "active" : "")">
+        <a asp-action="Index" 
+           asp-route-searchNgoaiNgu="Tiếng Anh"
+           asp-route-searchCapDo="@ViewBag.SearchCapDo"
+           asp-route-searchKeyword="@ViewBag.SearchKeyword"
+           asp-route-giaTu="@(ViewBag.GiaTu != null ? ((decimal)ViewBag.GiaTu).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-giaDen="@(ViewBag.GiaDen != null ? ((decimal)ViewBag.GiaDen).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-trangThai="@ViewBag.TrangThai"
+           asp-route-sortOrder="@ViewBag.SortOrder"
+           class="filter-pill @(ViewBag.SearchNgoaiNgu == "Tiếng Anh" ? "active" : "")">
             <i class="fa-solid fa-earth-americas text-primary me-1"></i> Tiếng Anh
         </a>
-        <a asp-action="Index" asp-route-searchNgoaiNgu="Tiếng Trung" class="filter-pill @(ViewBag.SearchNgoaiNgu == "Tiếng Trung" ? "active" : "")">
+        <a asp-action="Index" 
+           asp-route-searchNgoaiNgu="Tiếng Trung"
+           asp-route-searchCapDo="@ViewBag.SearchCapDo"
+           asp-route-searchKeyword="@ViewBag.SearchKeyword"
+           asp-route-giaTu="@(ViewBag.GiaTu != null ? ((decimal)ViewBag.GiaTu).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-giaDen="@(ViewBag.GiaDen != null ? ((decimal)ViewBag.GiaDen).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-trangThai="@ViewBag.TrangThai"
+           asp-route-sortOrder="@ViewBag.SortOrder"
+           class="filter-pill @(ViewBag.SearchNgoaiNgu == "Tiếng Trung" ? "active" : "")">
             <i class="fa-solid fa-language text-danger me-1"></i> Tiếng Trung
         </a>
-        <a asp-action="Index" asp-route-searchNgoaiNgu="Tiếng Nhật" class="filter-pill @(ViewBag.SearchNgoaiNgu == "Tiếng Nhật" ? "active" : "")">
+        <a asp-action="Index" 
+           asp-route-searchNgoaiNgu="Tiếng Nhật"
+           asp-route-searchCapDo="@ViewBag.SearchCapDo"
+           asp-route-searchKeyword="@ViewBag.SearchKeyword"
+           asp-route-giaTu="@(ViewBag.GiaTu != null ? ((decimal)ViewBag.GiaTu).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-giaDen="@(ViewBag.GiaDen != null ? ((decimal)ViewBag.GiaDen).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-trangThai="@ViewBag.TrangThai"
+           asp-route-sortOrder="@ViewBag.SortOrder"
+           class="filter-pill @(ViewBag.SearchNgoaiNgu == "Tiếng Nhật" ? "active" : "")">
             <i class="fa-solid fa-sun text-danger me-1"></i> Tiếng Nhật
         </a>
-        <a asp-action="Index" asp-route-searchNgoaiNgu="Tiếng Hàn" class="filter-pill @(ViewBag.SearchNgoaiNgu == "Tiếng Hàn" ? "active" : "")">
+        <a asp-action="Index" 
+           asp-route-searchNgoaiNgu="Tiếng Hàn"
+           asp-route-searchCapDo="@ViewBag.SearchCapDo"
+           asp-route-searchKeyword="@ViewBag.SearchKeyword"
+           asp-route-giaTu="@(ViewBag.GiaTu != null ? ((decimal)ViewBag.GiaTu).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-giaDen="@(ViewBag.GiaDen != null ? ((decimal)ViewBag.GiaDen).ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "")"
+           asp-route-trangThai="@ViewBag.TrangThai"
+           asp-route-sortOrder="@ViewBag.SortOrder"
+           class="filter-pill @(ViewBag.SearchNgoaiNgu == "Tiếng Hàn" ? "active" : "")">
             <i class="fa-solid fa-globe text-success me-1"></i> Tiếng Hàn
         </a>
     </div>

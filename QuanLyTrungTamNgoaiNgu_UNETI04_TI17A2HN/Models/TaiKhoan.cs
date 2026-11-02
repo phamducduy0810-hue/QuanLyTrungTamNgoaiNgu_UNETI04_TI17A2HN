@@ -40,12 +40,15 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models
         [Required(ErrorMessage = "Vai trò không được để trống")]
         [StringLength(20)]
         [Display(Name = "Vai trò")]
-        public string VaiTro { get; set; } = "HocVien"; // Admin, HocVien
+        public string VaiTro { get; set; } = "HocVien"; // Admin, HocVien, GiangVien
 
         [Display(Name = "Trạng thái")]
         public bool TrangThai { get; set; } = true; // true: Hoạt động, false: Khóa
 
         // Navigation Property 1-1 với HocVien
-        public virtual HocVien? HocVien { get; set; }
+        public virtual HocVien? HocVien { get; set; } 
+
+        // Navigation Property 1-1 với GiangVien
+        public virtual GiangVien? GiangVien { get; set; }
     }
 }

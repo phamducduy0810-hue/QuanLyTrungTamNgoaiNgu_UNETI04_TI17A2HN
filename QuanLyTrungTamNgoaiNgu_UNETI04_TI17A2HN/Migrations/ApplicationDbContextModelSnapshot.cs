@@ -56,6 +56,67 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Migrations
                     b.ToTable("DangKyHocs");
                 });
 
+            modelBuilder.Entity("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien", b =>
+                {
+                    b.Property<int>("MaGiangVien")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaGiangVien"));
+
+                    b.Property<string>("ChuyenMon")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("DiaChi")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GioiTinh")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("HoTen")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("MaTaiKhoan")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("NgaySinh")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SoDienThoai")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<bool>("TrangThai")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TrinhDo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("MaGiangVien");
+
+                    b.HasIndex("MaTaiKhoan")
+                        .IsUnique()
+                        .HasFilter("[MaTaiKhoan] IS NOT NULL");
+
+                    b.ToTable("GiangVien");
+                });
+
             modelBuilder.Entity("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.HocVien", b =>
                 {
                     b.Property<int>("MaHocVien")
@@ -159,6 +220,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("MaGiangVien")
+                        .HasColumnType("int");
+
                     b.Property<int>("MaKhoaHoc")
                         .HasColumnType("int");
 
@@ -184,6 +248,8 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("MaLop");
+
+                    b.HasIndex("MaGiangVien");
 
                     b.HasIndex("MaKhoaHoc");
 
@@ -253,6 +319,16 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Migrations
                     b.Navigation("LopHoc");
                 });
 
+            modelBuilder.Entity("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien", b =>
+                {
+                    b.HasOne("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.TaiKhoan", "TaiKhoan")
+                        .WithOne("GiangVien")
+                        .HasForeignKey("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien", "MaTaiKhoan")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("TaiKhoan");
+                });
+
             modelBuilder.Entity("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.HocVien", b =>
                 {
                     b.HasOne("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.TaiKhoan", "TaiKhoan")
@@ -266,13 +342,25 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Migrations
 
             modelBuilder.Entity("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.LopHoc", b =>
                 {
+                    b.HasOne("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien", "GiangVien")
+                        .WithMany("LopHocs")
+                        .HasForeignKey("MaGiangVien")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.KhoaHoc", "KhoaHoc")
                         .WithMany("LopHocs")
                         .HasForeignKey("MaKhoaHoc")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("GiangVien");
+
                     b.Navigation("KhoaHoc");
+                });
+
+            modelBuilder.Entity("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.GiangVien", b =>
+                {
+                    b.Navigation("LopHocs");
                 });
 
             modelBuilder.Entity("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.HocVien", b =>
@@ -292,6 +380,8 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Migrations
 
             modelBuilder.Entity("QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.TaiKhoan", b =>
                 {
+                    b.Navigation("GiangVien");
+
                     b.Navigation("HocVien");
                 });
 #pragma warning restore 612, 618
