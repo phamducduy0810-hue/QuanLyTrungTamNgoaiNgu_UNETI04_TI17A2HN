@@ -1,5 +1,5 @@
 // Họ và tên: Diêm Đức Hùng
-// Mã sinh viên: 23103100099
+// Mã sinh viên: 23103100099 
 // Nội dung thực hiện: Module 3 - Entity GiangVien (Quản lý thông tin giảng viên)
 
 using System;

@@ -1,6 +1,6 @@
 // Họ và tên: Diêm Đức Hùng
 // Mã sinh viên: 23103100099
-// Nội dung thực hiện: Module 3 - ViewModel quản lý phân công lớp học cho giảng viên
+// Nội dung thực hiện: Module 3 - ViewModel quản lý phân công lớp học cho giảng viên 
 
 using System.Collections.Generic;
 

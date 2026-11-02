@@ -6,7 +6,7 @@
 @model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.LopHoc
 
 @{
-    ViewData["Title"] = "Danh sách học viên - " + Model.TenLop;
+    ViewData["Title"] = "Danh sách học viên - " + Model.TenLop;   
     var danhSachDangKy = Model.DangKyHocs?.Where(d => d.TrangThai == "Đã xác nhận").OrderBy(d => d.HocVien?.HoTen).ToList();
     int stt = 1;
 }

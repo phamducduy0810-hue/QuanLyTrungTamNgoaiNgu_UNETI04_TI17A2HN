@@ -67,6 +67,6 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models
         [Display(Name = "Giảng viên phụ trách")]
         public virtual GiangVien? GiangVien { get; set; }
        
-        public virtual ICollection<DangKyHoc>? DangKyHocs { get; set; }
+        public virtual ICollection<DangKyHoc> DangKyHocs { get; set; } = new List<DangKyHoc>();
     }
 }
