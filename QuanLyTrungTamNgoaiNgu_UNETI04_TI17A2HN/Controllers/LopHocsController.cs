@@ -1,6 +1,7 @@
 // Họ và tên: Phạm Đức Duy
 // Mã sinh viên: 23103100084
 // Nội dung thực hiện: Module 2 - Quản lý lớp học, tìm kiếm, lọc, sắp xếp và phân trang
+// Bổ sung: Kiểm tra trùng phòng học & ca học, trùng lịch giảng viên (Schedule Conflict Checking)
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Filters;
+using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Helpers;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models;
+using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels;
 
 namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 {
@@ -264,7 +267,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 NgayKhaiGiang = DateTime.Today.AddDays(7),
                 TrangThai = "Đang tuyển sinh",
                 SoLuongToiDa = 25,
-                HocPhi = 1000000
+                HocPhi = 1000000,
+                PhongHoc = "Phòng A101",
+                LichHoc = "T2 - T4 - T6 (18:00 - 20:00)"
             };
             return View(model);
         }
@@ -277,10 +282,30 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(lopHoc);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Thêm mới lớp học '{lopHoc.TenLop}' thành công!";
-                return RedirectToAction(nameof(Index));
+                // 1. Kiểm tra trùng phòng học & ca học với các lớp đang hoạt động
+                var trungPhong = await TimLopTrungPhongVaCaHocAsync(null, lopHoc.PhongHoc, lopHoc.LichHoc);
+                if (trungPhong != null)
+                {
+                    ModelState.AddModelError("PhongHoc", $"Trùng phòng học! Phòng '{lopHoc.PhongHoc}' đã có lớp '{trungPhong.TenLop}' học vào ca này ({trungPhong.LichHoc}). Vui lòng đổi phòng hoặc chọn ca học khác.");
+                }
+
+                // 2. Kiểm tra trùng lịch giảng dạy của giảng viên (nếu có chọn giảng viên)
+                if (lopHoc.MaGiangVien.HasValue && lopHoc.MaGiangVien.Value > 0)
+                {
+                    var trungGv = await TimLopTrungGiangVienVaCaHocAsync(null, lopHoc.MaGiangVien.Value, lopHoc.LichHoc);
+                    if (trungGv != null)
+                    {
+                        ModelState.AddModelError("MaGiangVien", $"Trùng ca dạy! Giảng viên '{trungGv.GiangVien?.HoTen}' đã có lịch dạy lớp '{trungGv.TenLop}' ({trungGv.LichHoc}) tại phòng {trungGv.PhongHoc}.");
+                    }
+                }
+
+                if (ModelState.IsValid)
+                {
+                    _context.Add(lopHoc);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Thêm mới lớp học '{lopHoc.TenLop}' thành công!";
+                    return RedirectToAction(nameof(Index));
+                }
             }
             ViewData["MaKhoaHoc"] = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", lopHoc.MaKhoaHoc);
             ViewData["MaGiangVien"] = new SelectList(await _context.GiangViens.Where(g => g.TrangThai).OrderBy(g => g.HoTen).ToListAsync(), "MaGiangVien", "HoTen", lopHoc.MaGiangVien);
@@ -319,28 +344,192 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                // 1. Kiểm tra trùng phòng học & ca học (ngoại trừ chính lớp này)
+                var trungPhong = await TimLopTrungPhongVaCaHocAsync(lopHoc.MaLop, lopHoc.PhongHoc, lopHoc.LichHoc);
+                if (trungPhong != null)
                 {
-                    _context.Update(lopHoc);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Cập nhật lớp học '{lopHoc.TenLop}' thành công!";
+                    ModelState.AddModelError("PhongHoc", $"Trùng phòng học! Phòng '{lopHoc.PhongHoc}' đã có lớp '{trungPhong.TenLop}' học vào ca này ({trungPhong.LichHoc}). Vui lòng đổi phòng hoặc chọn ca học khác.");
                 }
-                catch (DbUpdateConcurrencyException)
+
+                // 2. Kiểm tra trùng lịch giảng dạy của giảng viên (nếu có chọn giảng viên)
+                if (lopHoc.MaGiangVien.HasValue && lopHoc.MaGiangVien.Value > 0)
                 {
-                    if (!LopHocExists(lopHoc.MaLop))
+                    var trungGv = await TimLopTrungGiangVienVaCaHocAsync(lopHoc.MaLop, lopHoc.MaGiangVien.Value, lopHoc.LichHoc);
+                    if (trungGv != null)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        ModelState.AddModelError("MaGiangVien", $"Trùng ca dạy! Giảng viên '{trungGv.GiangVien?.HoTen}' đã có lịch dạy lớp '{trungGv.TenLop}' ({trungGv.LichHoc}) tại phòng {trungGv.PhongHoc}.");
                     }
                 }
-                return RedirectToAction(nameof(Index));
+
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        _context.Update(lopHoc);
+                        await _context.SaveChangesAsync();
+                        TempData["SuccessMessage"] = $"Cập nhật lớp học '{lopHoc.TenLop}' thành công!";
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!LopHocExists(lopHoc.MaLop))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
             }
             ViewData["MaKhoaHoc"] = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", lopHoc.MaKhoaHoc);
             ViewData["MaGiangVien"] = new SelectList(await _context.GiangViens.Where(g => g.TrangThai).OrderBy(g => g.HoTen).ToListAsync(), "MaGiangVien", "HoTen", lopHoc.MaGiangVien);
             return View(lopHoc);
+        }
+
+        // =========================================================================
+        // TIỆN ÍCH KIỂM TRA TRÙNG PHÒNG HỌC & CA HỌC (AJAX & SERVER-SIDE)
+        // =========================================================================
+
+        /// <summary>
+        /// Tìm lớp học đang hoạt động bị trùng phòng và ca học
+        /// </summary>
+        private async Task<LopHoc?> TimLopTrungPhongVaCaHocAsync(int? maLopHienTai, string? phongHoc, string? lichHoc)
+        {
+            if (string.IsNullOrWhiteSpace(phongHoc) || string.IsNullOrWhiteSpace(lichHoc))
+                return null;
+
+            var dsLop = await _context.LopHocs
+                .Include(l => l.KhoaHoc)
+                .Include(l => l.GiangVien)
+                .Where(l => l.TrangThai != "Đã kết thúc" && l.TrangThai != "Đã hủy")
+                .ToListAsync();
+
+            foreach (var lop in dsLop)
+            {
+                if (maLopHienTai.HasValue && lop.MaLop == maLopHienTai.Value)
+                    continue;
+
+                if (LichHocHelper.KiemTraTrungPhongVaCaHoc(phongHoc, lichHoc, lop.PhongHoc, lop.LichHoc))
+                {
+                    return lop;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Tìm lớp học mà giảng viên đã có lịch dạy trong cùng ca học
+        /// </summary>
+        private async Task<LopHoc?> TimLopTrungGiangVienVaCaHocAsync(int? maLopHienTai, int maGiangVien, string? lichHoc)
+        {
+            if (maGiangVien <= 0 || string.IsNullOrWhiteSpace(lichHoc))
+                return null;
+
+            var dsLop = await _context.LopHocs
+                .Include(l => l.KhoaHoc)
+                .Include(l => l.GiangVien)
+                .Where(l => l.MaGiangVien == maGiangVien && l.TrangThai != "Đã kết thúc" && l.TrangThai != "Đã hủy")
+                .ToListAsync();
+
+            foreach (var lop in dsLop)
+            {
+                if (maLopHienTai.HasValue && lop.MaLop == maLopHienTai.Value)
+                    continue;
+
+                if (LichHocHelper.KiemTraTrungLich(lichHoc, lop.LichHoc))
+                {
+                    return lop;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// API kiểm tra trùng phòng học & ca học theo thời gian thực (Real-time AJAX Check)
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> KiemTraTrungLich(int? maLop, string? phongHoc, string? lichHoc, int? maGiangVien)
+        {
+            var trungPhong = await TimLopTrungPhongVaCaHocAsync(maLop, phongHoc, lichHoc);
+            var trungGv = (maGiangVien.HasValue && maGiangVien.Value > 0)
+                ? await TimLopTrungGiangVienVaCaHocAsync(maLop, maGiangVien.Value, lichHoc)
+                : null;
+
+            return Json(new
+            {
+                trungPhong = trungPhong != null,
+                thongBaoPhong = trungPhong != null
+                    ? $"Cảnh báo: Phòng '{phongHoc}' đã có lớp '{trungPhong.TenLop}' ({trungPhong.KhoaHoc?.TenKhoaHoc}) học vào ca này ({trungPhong.LichHoc})!"
+                    : "Phòng học trống và khả dụng cho ca học này.",
+                tenLopTrungPhong = trungPhong?.TenLop ?? "",
+                trungGiangVien = trungGv != null,
+                thongBaoGiangVien = trungGv != null
+                    ? $"Cảnh báo: Giảng viên đã có lịch dạy lớp '{trungGv.TenLop}' ({trungGv.LichHoc}) tại phòng {trungGv.PhongHoc}!"
+                    : "Giảng viên khả dụng cho ca học này.",
+                tenLopTrungGiangVien = trungGv?.TenLop ?? ""
+            });
+        }
+
+        /// <summary>
+        /// Trang hiển thị Thời khóa biểu ma trận Phòng học & Ca học và rà soát toàn bộ các xung đột
+        /// </summary>
+        [AuthorizeRole("Admin")]
+        public async Task<IActionResult> LichPhongHoc(string? phongHoc, string? caHoc)
+        {
+            var cacLopHoatDong = await _context.LopHocs
+                .Include(l => l.KhoaHoc)
+                .Include(l => l.GiangVien)
+                .Where(l => l.TrangThai != "Đã kết thúc" && l.TrangThai != "Đã hủy")
+                .ToListAsync();
+
+            // Danh sách phòng học
+            var dsPhong = cacLopHoatDong
+                .Select(l => l.PhongHoc.Trim())
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Distinct()
+                .Union(LichHocHelper.PhongHocPhoBien)
+                .OrderBy(p => p)
+                .ToList();
+
+            var dsCa = LichHocHelper.CaHocPhoBien.ToList();
+
+            // Quét toàn bộ để tìm các cặp xung đột
+            var danhSachTrung = new List<CanhBaoTrungLichItem>();
+            for (int i = 0; i < cacLopHoatDong.Count; i++)
+            {
+                for (int j = i + 1; j < cacLopHoatDong.Count; j++)
+                {
+                    var l1 = cacLopHoatDong[i];
+                    var l2 = cacLopHoatDong[j];
+
+                    if (LichHocHelper.KiemTraTrungPhongVaCaHoc(l1.PhongHoc, l1.LichHoc, l2.PhongHoc, l2.LichHoc))
+                    {
+                        danhSachTrung.Add(new CanhBaoTrungLichItem
+                        {
+                            PhongHoc = l1.PhongHoc,
+                            Lop1 = l1,
+                            Lop2 = l2,
+                            LyDoTrung = $"Trùng phòng '{l1.PhongHoc}': Lớp '{l1.TenLop}' ({l1.LichHoc}) giao lịch với Lớp '{l2.TenLop}' ({l2.LichHoc})"
+                        });
+                    }
+                }
+            }
+
+            var vm = new LichPhongHocViewModel
+            {
+                DanhSachPhongHoc = dsPhong,
+                DanhSachCaHoc = dsCa,
+                TatCaLopHoatDong = cacLopHoatDong,
+                DanhSachTrungLich = danhSachTrung,
+                PhongHocLoc = phongHoc,
+                CaHocLoc = caHoc,
+                TongSoLopDangHoc = cacLopHoatDong.Count,
+                TongSoPhongSuDung = cacLopHoatDong.Select(l => LichHocHelper.NormalizeRoom(l.PhongHoc)).Distinct().Count()
+            };
+
+            return View(vm);
         }
 
         // GET: LopHocs/Delete/5 (Admin)

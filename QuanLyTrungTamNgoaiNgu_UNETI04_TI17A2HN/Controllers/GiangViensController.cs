@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data;
+using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Helpers;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models;
 
 namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
@@ -336,6 +337,22 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 }
                 else
                 {
+                    // Kiểm tra trùng lịch giảng dạy của giảng viên vào cùng ca học
+                    var lopTrungLich = await _context.LopHocs
+                        .Where(l => l.MaLop != maLop && l.MaGiangVien == maGiangVien.Value && l.TrangThai != "Đã kết thúc" && l.TrangThai != "Đã hủy")
+                        .ToListAsync();
+
+                    var lopXungDot = lopTrungLich.FirstOrDefault(l => LichHocHelper.KiemTraTrungLich(l.LichHoc, lop.LichHoc));
+                    if (lopXungDot != null)
+                    {
+                        TempData["Loi"] = $"Trùng ca dạy! Giảng viên '{gv.HoTen}' đã có lịch dạy lớp '{lopXungDot.TenLop}' ({lopXungDot.LichHoc}) tại phòng {lopXungDot.PhongHoc}. Vui lòng chọn giảng viên khác!";
+                        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                        {
+                            return Redirect(returnUrl);
+                        }
+                        return RedirectToAction(nameof(PhanCong), new { maGiangVien });
+                    }
+
                     lop.MaGiangVien = maGiangVien.Value;
                     await _context.SaveChangesAsync();
                     TempData["ThanhCong"] = $"Đã phân công giảng viên '{gv.HoTen}' phụ trách lớp '{lop.TenLop}' thành công!";

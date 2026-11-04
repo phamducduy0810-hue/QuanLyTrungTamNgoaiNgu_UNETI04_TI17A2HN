@@ -1,8 +1,10 @@
 @*
     Họ và tên: Phạm Đức Duy
     Nội dung thực hiện: Module 2 - Giao diện Chỉnh sửa lớp học (Edit)
+    Bổ sung: Kiểm tra trùng phòng học & ca học theo thời gian thực (AJAX Conflict Check)
 *@
 @model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.LopHoc
+@using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Helpers
 
 @{
     ViewData["Title"] = "Chỉnh sửa Lớp học";
@@ -10,24 +12,25 @@
 
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-warning text-dark py-3">
-                    <h4 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>CHỈNH SỬA THÔNG TIN LỚP HỌC</h4>
+                <div class="card-header bg-warning text-dark py-3 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>CHỈNH SỬA THÔNG TIN LỚP HỌC</h4>
+                    <a asp-action="LichPhongHoc" class="btn btn-sm btn-dark fw-semibold" target="_blank">
+                        <i class="fa-solid fa-calendar-week me-1"></i> Xem lịch phòng trống
+                    </a>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Edit" method="post">
+                    <form asp-action="Edit" method="post" id="formEditLop">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                        <input type="hidden" asp-for="MaLop" />
+                        <input type="hidden" asp-for="MaLop" id="inputMaLop" />
 
-                        
                         <div class="mb-3">
                             <label asp-for="TenLop" class="form-label fw-bold"></label>
                             <input asp-for="TenLop" class="form-control" />
                             <span asp-validation-for="TenLop" class="text-danger"></span>
                         </div>
 
-                        
                         <div class="mb-3">
                             <label asp-for="MaKhoaHoc" class="form-label fw-bold"></label>
                             <select asp-for="MaKhoaHoc" class="form-select" asp-items="ViewBag.MaKhoaHoc"></select>
@@ -36,13 +39,12 @@
 
                         <div class="mb-3">
                             <label asp-for="MaGiangVien" class="form-label fw-bold"></label>
-                            <select asp-for="MaGiangVien" class="form-select" asp-items="ViewBag.MaGiangVien">
+                            <select asp-for="MaGiangVien" id="selectGiangVien" class="form-select" asp-items="ViewBag.MaGiangVien">
                                 <option value="">-- Chưa phân công giảng viên --</option>
                             </select>
                             <span asp-validation-for="MaGiangVien" class="text-danger"></span>
                         </div>
 
-                        
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="NgayKhaiGiang" class="form-label fw-bold"></label>
@@ -51,19 +53,40 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="PhongHoc" class="form-label fw-bold"></label>
-                                <input asp-for="PhongHoc" class="form-control" />
+                                <input asp-for="PhongHoc" id="inputPhongHoc" class="form-control" list="listPhongHoc" />
+                                <datalist id="listPhongHoc">
+                                    @foreach (var ph in LichHocHelper.PhongHocPhoBien)
+                                    {
+                                        <option value="@ph"></option>
+                                    }
+                                </datalist>
                                 <span asp-validation-for="PhongHoc" class="text-danger"></span>
                             </div>
                         </div>
 
-                        <!-- 4. Lịch học -->
                         <div class="mb-3">
                             <label asp-for="LichHoc" class="form-label fw-bold"></label>
-                            <input asp-for="LichHoc" class="form-control" />
+                            <input asp-for="LichHoc" id="inputLichHoc" class="form-control" list="listCaHoc" />
+                            <datalist id="listCaHoc">
+                                @foreach (var ca in LichHocHelper.CaHocPhoBien)
+                                {
+                                    <option value="@ca"></option>
+                                }
+                            </datalist>
                             <span asp-validation-for="LichHoc" class="text-danger"></span>
                         </div>
 
-                        <!-- 5. Số lượng tối đa & Học phí -->
+                        <!-- Khối cảnh báo trùng phòng & ca học theo thời gian thực -->
+                        <div id="conflictAlertBox" class="mb-3 p-3 rounded border d-none">
+                            <div class="d-flex align-items-center gap-2">
+                                <i id="conflictIcon" class="fa-solid fa-triangle-exclamation fs-5"></i>
+                                <div>
+                                    <div id="conflictTitle" class="fw-bold"></div>
+                                    <div id="conflictDetail" class="small"></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="SoLuongToiDa" class="form-label fw-bold"></label>
@@ -77,7 +100,6 @@
                             </div>
                         </div>
 
-                       
                         <div class="mb-4">
                             <label asp-for="TrangThai" class="form-label fw-bold"></label>
                             <select asp-for="TrangThai" class="form-select">
@@ -89,12 +111,12 @@
                             <span asp-validation-for="TrangThai" class="text-danger"></span>
                         </div>
 
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between pt-2">
                             <a asp-action="Index" class="btn btn-secondary px-4">
-                                <i class="bi bi-arrow-left"></i> Quay lại
+                                <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
                             </a>
-                            <button type="submit" class="btn btn-warning px-4 fw-bold">
-                                <i class="bi bi-check2-circle me-1"></i> Lưu thay đổi
+                            <button type="submit" class="btn btn-warning px-4 fw-bold text-dark">
+                                <i class="fa-solid fa-check me-1"></i> Lưu thay đổi
                             </button>
                         </div>
                     </form>
@@ -106,4 +128,72 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            let timeout = null;
+
+            function kiemTraTrungLich() {
+                clearTimeout(timeout);
+                timeout = setTimeout(function () {
+                    const maLop = $('#inputMaLop').val();
+                    const phongHoc = $('#inputPhongHoc').val().trim();
+                    const lichHoc = $('#inputLichHoc').val().trim();
+                    const maGiangVien = $('#selectGiangVien').val();
+
+                    if (!phongHoc || !lichHoc) {
+                        $('#conflictAlertBox').addClass('d-none');
+                        $('#inputPhongHoc').removeClass('is-invalid is-valid');
+                        $('#inputLichHoc').removeClass('is-invalid is-valid');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '@Url.Action("KiemTraTrungLich", "LopHocs")',
+                        type: 'GET',
+                        data: {
+                            maLop: maLop,
+                            phongHoc: phongHoc,
+                            lichHoc: lichHoc,
+                            maGiangVien: maGiangVien
+                        },
+                        success: function (res) {
+                            const box = $('#conflictAlertBox');
+                            const icon = $('#conflictIcon');
+                            const title = $('#conflictTitle');
+                            const detail = $('#conflictDetail');
+
+                            box.removeClass('d-none alert-danger bg-danger-subtle text-danger alert-success bg-success-subtle text-success border-danger border-success');
+
+                            if (res.trungPhong) {
+                                box.addClass('bg-danger-subtle text-danger border-danger');
+                                icon.attr('class', 'fa-solid fa-circle-xmark text-danger fs-4');
+                                title.text('Xung đột: Trùng phòng học & Ca học!');
+                                detail.text(res.thongBaoPhong);
+                                $('#inputPhongHoc').addClass('is-invalid').removeClass('is-valid');
+                                $('#inputLichHoc').addClass('is-invalid').removeClass('is-valid');
+                            } else if (res.trungGiangVien) {
+                                box.addClass('bg-warning-subtle text-warning-emphasis border-warning');
+                                icon.attr('class', 'fa-solid fa-triangle-exclamation text-warning fs-4');
+                                title.text('Cảnh báo: Trùng lịch dạy của giảng viên!');
+                                detail.text(res.thongBaoGiangVien);
+                                $('#inputPhongHoc').addClass('is-valid').removeClass('is-invalid');
+                                $('#selectGiangVien').addClass('is-invalid').removeClass('is-valid');
+                            } else {
+                                box.addClass('bg-success-subtle text-success border-success');
+                                icon.attr('class', 'fa-solid fa-circle-check text-success fs-4');
+                                title.text('Phòng học & Ca học hợp lệ');
+                                detail.text('Không có lớp nào khác bị trùng phòng hoặc trùng giảng viên.');
+                                $('#inputPhongHoc').addClass('is-valid').removeClass('is-invalid');
+                                $('#inputLichHoc').addClass('is-valid').removeClass('is-invalid');
+                                $('#selectGiangVien').removeClass('is-invalid');
+                            }
+                        }
+                    });
+                }, 350);
+            }
+
+            $('#inputPhongHoc, #inputLichHoc, #selectGiangVien').on('input change', kiemTraTrungLich);
+        });
+    </script>
 }
