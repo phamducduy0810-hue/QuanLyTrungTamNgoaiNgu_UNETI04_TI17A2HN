@@ -1,0 +1,287 @@
+@*
+    Họ và tên: Phạm Đức Duy - 23103100084 & Nhóm UNETI04
+    Nội dung thực hiện: Module 2 - Giao diện tra cứu & Kiểm tra trùng phòng học, ca học
+*@
+@model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels.LichPhongHocViewModel
+@using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Helpers
+
+@{
+    ViewData["Title"] = "Kiểm tra Trùng Phòng Học & Ca Học";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header banner -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+            <h2 class="fw-bold mb-1 text-primary">
+                <i class="fa-solid fa-calendar-check me-2"></i>Tình Trạng Phòng Học & Ca Học
+            </h2>
+            <p class="text-muted mb-0">Tra cứu, rà soát xung đột trùng phòng học và ca học của các lớp đang hoạt động.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Create" class="btn btn-success d-inline-flex align-items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-plus-circle"></i> Thêm Lớp Mới
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Về Danh Sách Lớp
+            </a>
+        </div>
+    </div>
+
+    <!-- Khối thống kê tổng quan -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm border-start border-primary border-4 p-3 bg-white">
+                <div class="text-muted small text-uppercase fw-semibold">Tổng lớp đang hoạt động</div>
+                <div class="fs-2 fw-bold text-primary mt-1">@Model.TongSoLopDangHoc</div>
+                <div class="small text-muted">Bao gồm lớp sắp mở, tuyển sinh và đang học</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm border-start border-info border-4 p-3 bg-white">
+                <div class="text-muted small text-uppercase fw-semibold">Phòng học đang sử dụng</div>
+                <div class="fs-2 fw-bold text-info mt-1">@Model.TongSoPhongSuDung</div>
+                <div class="small text-muted">Tổng số phòng học có lịch giảng dạy</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            @if (Model.DanhSachTrungLich.Any())
+            {
+                <div class="card border-0 shadow-sm border-start border-danger border-4 p-3 bg-danger-subtle text-danger">
+                    <div class="small text-uppercase fw-bold">Phát hiện xung đột trùng lịch</div>
+                    <div class="fs-2 fw-bold mt-1">@Model.DanhSachTrungLich.Count cặp trùng</div>
+                    <div class="small">Cần điều chỉnh lại phòng hoặc ca học!</div>
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 shadow-sm border-start border-success border-4 p-3 bg-success-subtle text-success">
+                    <div class="small text-uppercase fw-bold">Trạng thái xung đột</div>
+                    <div class="fs-2 fw-bold mt-1"><i class="fa-solid fa-circle-check me-2"></i>An toàn</div>
+                    <div class="small">Không có xung đột trùng phòng & ca học nào</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Danh sách cảnh báo trùng lịch nếu có -->
+    @if (Model.DanhSachTrungLich.Any())
+    {
+        <div class="card border-danger shadow-sm mb-4">
+            <div class="card-header bg-danger text-white py-2 fw-bold d-flex align-items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>CẢNH BÁO XUNG ĐỘT TRÙNG PHÒNG VÀ CA HỌC TRONG HỆ THỐNG (@Model.DanhSachTrungLich.Count)</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Phòng học</th>
+                                <th>Lớp 1</th>
+                                <th>Lịch học lớp 1</th>
+                                <th>Lớp 2</th>
+                                <th>Lịch học lớp 2</th>
+                                <th>Thao tác khắc phục</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var x in Model.DanhSachTrungLich)
+                            {
+                                <tr>
+                                    <td><strong class="badge bg-danger fs-6">@x.PhongHoc</strong></td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@x.Lop1.TenLop</div>
+                                        <div class="small text-muted">@x.Lop1.KhoaHoc?.TenKhoaHoc</div>
+                                    </td>
+                                    <td><span class="badge bg-secondary">@x.Lop1.LichHoc</span></td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@x.Lop2.TenLop</div>
+                                        <div class="small text-muted">@x.Lop2.KhoaHoc?.TenKhoaHoc</div>
+                                    </td>
+                                    <td><span class="badge bg-secondary">@x.Lop2.LichHoc</span></td>
+                                    <td>
+                                        <a asp-action="Edit" asp-route-id="@x.Lop2.MaLop" class="btn btn-sm btn-outline-warning">
+                                            <i class="fa-solid fa-pen-to-square me-1"></i> Đổi phòng Lớp 2
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Công cụ kiểm tra nhanh tức thì -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="fa-solid fa-magnifying-glass-arrow-right text-primary me-2"></i>Kiểm Tra Nhanh Phòng Học & Ca Học
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Chọn hoặc nhập Phòng học:</label>
+                    <input type="text" id="checkPhong" class="form-control" list="listPhongHocNhanh" placeholder="VD: Phòng A101" />
+                    <datalist id="listPhongHocNhanh">
+                        @foreach (var ph in Model.DanhSachPhongHoc)
+                        {
+                            <option value="@ph"></option>
+                        }
+                    </datalist>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold">Chọn hoặc nhập Ca học:</label>
+                    <input type="text" id="checkCa" class="form-control" list="listCaHocNhanh" placeholder="VD: T2 - T4 - T6 (18:00 - 20:00)" />
+                    <datalist id="listCaHocNhanh">
+                        @foreach (var ca in Model.DanhSachCaHoc)
+                        {
+                            <option value="@ca"></option>
+                        }
+                    </datalist>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" id="btnKiemTraNhanh" class="btn btn-primary w-100 fw-bold d-flex align-items-center justify-content-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i> Kiểm tra ngay
+                    </button>
+                </div>
+            </div>
+
+            <div id="checkResultBox" class="mt-3 p-3 rounded d-none">
+                <div class="d-flex align-items-center gap-2">
+                    <i id="checkResultIcon" class="fs-4"></i>
+                    <div id="checkResultText" class="fw-semibold"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng ma trận thời khóa biểu phòng học -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="fa-solid fa-table-cells text-primary me-2"></i>Ma Trận Lịch Phòng Học & Ca Học
+            </h5>
+            <span class="badge bg-primary">Thời khóa biểu trung tâm</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0 align-middle text-center" style="font-size: 0.88rem;">
+                    <thead class="table-primary text-white" style="background-color: #1e3a8a;">
+                        <tr>
+                            <th style="min-width: 130px; background-color: #1e3a8a; color: white;">Phòng Học</th>
+                            @foreach (var ca in Model.DanhSachCaHoc)
+                            {
+                                <th style="min-width: 180px; background-color: #1e3a8a; color: white;">@ca</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var phong in Model.DanhSachPhongHoc)
+                        {
+                            <tr>
+                                <td class="fw-bold bg-light text-start ps-3">
+                                    <i class="fa-solid fa-door-open text-primary me-1"></i> @phong
+                                </td>
+                                @foreach (var ca in Model.DanhSachCaHoc)
+                                {
+                                    // Tìm các lớp học trong phòng này khớp với ca học này
+                                    var lopKhop = Model.TatCaLopHoatDong
+                                        .Where(l => LichHocHelper.KiemTraTrungPhongVaCaHoc(l.PhongHoc, l.LichHoc, phong, ca))
+                                        .ToList();
+
+                                    if (lopKhop.Count == 0)
+                                    {
+                                        <td class="bg-white text-muted">
+                                            <span class="badge bg-light text-secondary border">
+                                                <i class="fa-solid fa-check text-success me-1"></i> Trống
+                                            </span>
+                                        </td>
+                                    }
+                                    else if (lopKhop.Count == 1)
+                                    {
+                                        var lop = lopKhop.First();
+                                        <td class="bg-success-subtle text-start p-2">
+                                            <div class="fw-bold text-success-emphasis text-truncate" title="@lop.TenLop">
+                                                <i class="fa-solid fa-graduation-cap me-1"></i>@lop.TenLop
+                                            </div>
+                                            <div class="small text-muted text-truncate" title="@lop.KhoaHoc?.TenKhoaHoc">
+                                                @lop.KhoaHoc?.TenKhoaHoc
+                                            </div>
+                                            <div class="small text-secondary mt-1">
+                                                <i class="fa-solid fa-chalkboard-user me-1"></i>@(lop.GiangVien?.HoTen ?? "Chưa phân công")
+                                            </div>
+                                            <div class="small mt-1">
+                                                <span class="badge bg-success">@lop.TrangThai</span>
+                                                <a asp-action="Details" asp-route-id="@lop.MaLop" class="btn btn-link btn-sm p-0 ms-1 text-primary">Chi tiết</a>
+                                            </div>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="bg-danger-subtle text-start p-2 border border-danger">
+                                            <div class="badge bg-danger mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i> TRÙNG @lopKhop.Count LỚP!</div>
+                                            @foreach (var l in lopKhop)
+                                            {
+                                                <div class="small fw-bold text-danger text-truncate" title="@l.TenLop">
+                                                    • @l.TenLop (@l.LichHoc)
+                                                </div>
+                                            }
+                                        </td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#btnKiemTraNhanh').click(function () {
+                const phong = $('#checkPhong').val().trim();
+                const ca = $('#checkCa').val().trim();
+
+                if (!phong || !ca) {
+                    alert('Vui lòng nhập cả Phòng học và Ca học để kiểm tra!');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("KiemTraTrungLich", "LopHocs")',
+                    type: 'GET',
+                    data: {
+                        maLop: null,
+                        phongHoc: phong,
+                        lichHoc: ca,
+                        maGiangVien: null
+                    },
+                    success: function (res) {
+                        const box = $('#checkResultBox');
+                        const icon = $('#checkResultIcon');
+                        const text = $('#checkResultText');
+
+                        box.removeClass('d-none bg-danger-subtle text-danger bg-success-subtle text-success border border-danger border-success');
+
+                        if (res.trungPhong) {
+                            box.addClass('bg-danger-subtle text-danger border border-danger');
+                            icon.attr('class', 'fa-solid fa-circle-xmark text-danger fs-4');
+                            text.text(res.thongBaoPhong);
+                        } else {
+                            box.addClass('bg-success-subtle text-success border border-success');
+                            icon.attr('class', 'fa-solid fa-circle-check text-success fs-4');
+                            text.text(`Tuyệt vời! ${phong} hoàn toàn trống trong ca ${ca}. Bạn có thể xếp lớp vào thời gian này.`);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}

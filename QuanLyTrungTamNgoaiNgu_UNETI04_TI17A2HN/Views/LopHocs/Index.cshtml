@@ -21,9 +21,14 @@
         </div>
         @if (isAdmin)
         {
-            <a asp-action="Create" class="btn btn-success px-4 py-2 shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i> Thêm Lớp học mới
-            </a>
+            <div class="d-flex gap-2">
+                <a asp-action="LichPhongHoc" class="btn btn-outline-primary px-3 py-2 shadow-sm d-inline-flex align-items-center gap-1">
+                    <i class="fa-solid fa-calendar-check"></i> Tình trạng Phòng &amp; Ca học
+                </a>
+                <a asp-action="Create" class="btn btn-success px-4 py-2 shadow-sm d-inline-flex align-items-center gap-1">
+                    <i class="fa-solid fa-plus-circle"></i> Thêm Lớp học mới
+                </a>
+            </div>
         }
     </div>
 

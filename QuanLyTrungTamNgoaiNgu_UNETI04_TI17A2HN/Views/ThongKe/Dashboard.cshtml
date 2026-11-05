@@ -14,18 +14,40 @@
 
 <partial name="_Module4Styles" />
 
-<h2 class="m4-page-title">Dashboard quản trị</h2>
-<p class="m4-page-sub">Tổng quan hoạt động của trung tâm ngoại ngữ.</p>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+    <div>
+        <h2 class="m4-page-title mb-0">Dashboard quản trị</h2>
+        <p class="m4-page-sub mb-0">Tổng quan hoạt động của trung tâm ngoại ngữ.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="ExportExcel" class="btn btn-success d-inline-flex align-items-center gap-2 shadow-sm px-3">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Xuất Excel Báo Cáo</span>
+        </a>
+        <a asp-action="Index" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm px-3">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Thống Kê Chi Tiết</span>
+        </a>
+    </div>
+</div>
 
 @if (TempData["ThanhCong"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["ThanhCong"]
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fa-solid fa-circle-check me-2"></i> @TempData["ThanhCong"]
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
     </div>
 }
 
-<h5 class="mb-3">Quy mô trung tâm</h5>
+@if (TempData["Loi"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i> @TempData["Loi"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+}
+
+<h5 class="mb-3 mt-3">Quy mô trung tâm</h5>
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
         <div class="m4-stat blue"><div class="label">Khóa học</div><div class="value">@Model.TongKhoaHoc</div></div>
@@ -84,16 +106,23 @@
 
     <div class="col-lg-5">
         <div class="m4-card h-100">
-            <div class="m4-card-head">Lối tắt</div>
+            <div class="m4-card-head">Lối tắt thao tác nhanh</div>
             <div class="m4-card-body d-grid gap-2">
                 @if (Model.DangKyChoXacNhan > 0)
                 {
                     <a asp-controller="QuanLyDangKy" asp-action="Index" asp-route-trangThai="@TrangThaiDangKy.ChoXacNhan" class="btn btn-warning">
-                        Xử lý @Model.DangKyChoXacNhan đăng ký chờ xác nhận
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i> Xử lý @Model.DangKyChoXacNhan đăng ký chờ xác nhận
                     </a>
                 }
-                <a asp-controller="QuanLyDangKy" asp-action="Index" class="btn btn-outline-primary">Quản lý đăng ký</a>
-                <a asp-controller="ThongKe" asp-action="Index" class="btn btn-outline-primary">Xem thống kê chi tiết</a>
+                <a asp-controller="QuanLyDangKy" asp-action="Index" class="btn btn-outline-primary">
+                    <i class="fa-solid fa-clipboard-list me-1"></i> Quản lý đăng ký học
+                </a>
+                <a asp-controller="ThongKe" asp-action="Index" class="btn btn-outline-primary">
+                    <i class="fa-solid fa-chart-column me-1"></i> Xem thống kê & Biểu đồ
+                </a>
+                <a asp-controller="ThongKe" asp-action="ExportExcel" class="btn btn-outline-success">
+                    <i class="fa-solid fa-file-excel me-1"></i> Xuất toàn bộ báo cáo ra Excel
+                </a>
             </div>
         </div>
     </div>

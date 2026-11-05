@@ -1,6 +1,6 @@
-﻿// Họ và tên: Lê Đăng Duy
+// Họ và tên: Lê Đăng Duy
 // Mã sinh viên: 23103100089
-// Nội dung thực hiện: Module 4 - ViewModel các thống kê (số lượng, học phí)
+// Nội dung thực hiện: Module 4 - ViewModel các thống kê (số lượng, học phí, xuất nhập Excel)
 
 namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels
 {
@@ -23,6 +23,15 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels
         public decimal TongHocPhi { get; set; }
     }
 
+    public class ImportThongKeResult
+    {
+        public int TongSoDong { get; set; }
+        public int SoThanhCong { get; set; }
+        public int SoLoi { get; set; }
+        public List<string> DanhSachLoi { get; set; } = new();
+        public List<string> ChiTietThanhCong { get; set; } = new();
+    }
+
     public class ThongKeViewModel
     {
         public List<ThongKeSoLuongItem> SoLopTheoKhoaHoc { get; set; } = new();
@@ -31,5 +40,6 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels
         public List<ThongKeLopItem> LopNhieuDangKyNhat { get; set; } = new();
         public List<ThongKeHocPhiItem> HocPhiTheoLop { get; set; } = new();
         public List<ThongKeHocPhiItem> HocPhiTheoKhoaHoc { get; set; } = new();
+        public ImportThongKeResult? KetQuaImport { get; set; }
     }
 }

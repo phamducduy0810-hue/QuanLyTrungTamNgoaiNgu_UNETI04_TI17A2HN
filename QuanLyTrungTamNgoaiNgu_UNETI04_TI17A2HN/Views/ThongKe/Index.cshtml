@@ -1,10 +1,10 @@
 @* Họ và tên: Lê Đăng Duy *@
 @* Mã sinh viên: 23103100089 *@
-@* Nội dung thực hiện: Module 4 - Giao diện thống kê *@
+@* Nội dung thực hiện: Module 4 - Giao diện thống kê & Bổ sung Xuất / Nhập Excel *@
 @model QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels.ThongKeViewModel
 @using System.Globalization
 @{
-    ViewData["Title"] = "Thống kê";
+    ViewData["Title"] = "Thống kê báo cáo";
 
     string Pct(decimal v, decimal max) => max > 0
         ? ((double)v * 100.0 / (double)max).ToString("0.#", CultureInfo.InvariantCulture)
@@ -20,11 +20,103 @@
 
 <partial name="_Module4Styles" />
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
-    <h2 class="m4-page-title mb-0">Thống kê</h2>
-    <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">Về Dashboard</a>
+<!-- Thanh tiêu đề và nút chức năng Xuất / Nhập Excel -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+    <div>
+        <h2 class="m4-page-title mb-0">Thống kê & Báo cáo</h2>
+        <p class="m4-page-sub mb-0">Số liệu về lớp học, đăng ký và học phí. Học phí chỉ tính các đăng ký đã xác nhận.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="ExportExcel" class="btn btn-success d-inline-flex align-items-center gap-2 shadow-sm px-3">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Xuất Excel Báo cáo</span>
+        </a>
+        <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#modalImportExcel">
+            <i class="fa-solid fa-file-import"></i>
+            <span>Nhập Excel</span>
+        </button>
+        <a asp-action="DownloadTemplate" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <i class="fa-solid fa-download"></i>
+            <span>File Mẫu</span>
+        </a>
+        <a asp-action="Dashboard" class="btn btn-outline-dark d-inline-flex align-items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Về Dashboard</span>
+        </a>
+    </div>
 </div>
-<p class="m4-page-sub">Số liệu về lớp học, đăng ký và học phí. Học phí chỉ tính các đăng ký đã xác nhận.</p>
+
+<!-- Thông báo TempData -->
+@if (TempData["ThanhCong"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fa-solid fa-circle-check me-2"></i> @TempData["ThanhCong"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+}
+
+@if (TempData["Loi"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i> @TempData["Loi"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+}
+
+<!-- Chi tiết kết quả nhập Excel (nếu vừa nhập) -->
+@if (Model.KetQuaImport != null)
+{
+    <div class="card border-0 shadow-sm mb-4" style="background-color: #f8fafc; border-left: 5px solid #2563eb !important;">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="card-title mb-0 text-primary fw-bold">
+                    <i class="fa-solid fa-file-waveform me-2"></i> Kết Quả Nhập Dữ Liệu Excel
+                </h5>
+                <span class="badge bg-secondary">Tổng số dòng xử lý: @Model.KetQuaImport.TongSoDong</span>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                    <div class="p-2 rounded bg-success-subtle text-success border border-success-subtle d-flex justify-content-between align-items-center">
+                        <span><i class="fa-solid fa-check-circle me-1"></i> Thành công:</span>
+                        <strong class="fs-5">@Model.KetQuaImport.SoThanhCong dòng</strong>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-2 rounded bg-danger-subtle text-danger border border-danger-subtle d-flex justify-content-between align-items-center">
+                        <span><i class="fa-solid fa-triangle-exclamation me-1"></i> Dòng lỗi:</span>
+                        <strong class="fs-5">@Model.KetQuaImport.SoLoi dòng</strong>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.KetQuaImport.DanhSachLoi.Any())
+            {
+                <div class="alert alert-warning mb-2 py-2">
+                    <div class="fw-semibold mb-1 text-danger"><i class="fa-solid fa-list-ul me-1"></i> Danh sách dòng gặp lỗi:</div>
+                    <ul class="mb-0 ps-3 small">
+                        @foreach (var err in Model.KetQuaImport.DanhSachLoi)
+                        {
+                            <li>@err</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (Model.KetQuaImport.ChiTietThanhCong.Any())
+            {
+                <details class="small text-muted mt-2">
+                    <summary class="cursor-pointer text-success fw-semibold">Xem chi tiết các bản ghi đã nhập/cập nhật (@Model.KetQuaImport.ChiTietThanhCong.Count)</summary>
+                    <ul class="mb-0 ps-3 mt-1">
+                        @foreach (var ok in Model.KetQuaImport.ChiTietThanhCong)
+                        {
+                            <li>@ok</li>
+                        }
+                    </ul>
+                </details>
+            }
+        </div>
+    </div>
+}
 
 <div class="row g-3 mb-4">
     <div class="col-md-4">
@@ -180,6 +272,58 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nhập Excel -->
+<div class="modal fade" id="modalImportExcel" tabindex="-1" aria-labelledby="modalImportExcelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalImportExcelLabel">
+                    <i class="fa-solid fa-file-excel me-2"></i> Nhập Dữ Liệu Excel Thống Kê
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <form asp-action="ImportExcel" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">
+                        Tải lên file Excel (.xlsx hoặc .xls) chứa danh sách đăng ký học viên. Hệ thống sẽ tự động cập nhật số liệu học viên, lớp học và doanh thu thống kê.
+                    </p>
+
+                    <div class="alert alert-info py-2 small d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <i class="fa-solid fa-circle-info me-1"></i>
+                            <span>Chưa có file mẫu chuẩn?</span>
+                        </div>
+                        <a asp-action="DownloadTemplate" class="btn btn-sm btn-outline-primary bg-white">
+                            <i class="fa-solid fa-download me-1"></i> Tải File Mẫu (.xlsx)
+                        </a>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fileExcel" class="form-label fw-semibold">Chọn file Excel (.xlsx, .xls) <span class="text-danger">*</span></label>
+                        <input class="form-control" type="file" id="fileExcel" name="fileExcel" accept=".xlsx, .xls" required>
+                    </div>
+
+                    <div class="bg-light p-3 rounded small text-secondary">
+                        <div class="fw-semibold text-dark mb-1"><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> Lưu ý khi nhập file:</div>
+                        <ul class="mb-0 ps-3">
+                            <li>Cột <strong>Họ tên</strong> và <strong>Tên lớp hoặc Mã lớp</strong> là bắt buộc.</li>
+                            <li>Hệ thống tự động liên kết học viên cũ hoặc tạo mới nếu chưa tồn tại.</li>
+                            <li>Nếu để trống học phí, hệ thống sẽ tự động áp dụng học phí mặc định của lớp học.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Bắt đầu Nhập dữ liệu
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

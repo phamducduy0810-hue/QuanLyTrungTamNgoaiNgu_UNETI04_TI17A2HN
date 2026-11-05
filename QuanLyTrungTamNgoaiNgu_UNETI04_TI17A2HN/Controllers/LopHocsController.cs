@@ -1,6 +1,7 @@
 // Họ và tên: Phạm Đức Duy
 // Mã sinh viên: 23103100084
 // Nội dung thực hiện: Module 2 - Quản lý lớp học, tìm kiếm, lọc, sắp xếp và phân trang
+// Bổ sung: Kiểm tra trùng phòng học & ca học, trùng lịch giảng viên (Schedule Conflict Checking)
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Data;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Filters;
+using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Helpers;
 using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models;
+using QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Models.ViewModels;
+using System.IO;
+using ClosedXML.Excel;
 
 namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 {
@@ -231,7 +236,6 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
             return View(viewModel);
         }
-
         // GET: LopHocs/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -243,7 +247,8 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
             var lopHoc = await _context.LopHocs
                 .Include(l => l.KhoaHoc)
                 .Include(l => l.GiangVien)
-                .Include(l => l.DangKyHocs)
+                .Include(l => l.DangKyHocs!)
+                    .ThenInclude(d => d.HocVien)
                 .FirstOrDefaultAsync(m => m.MaLop == id);
             if (lopHoc == null)
             {
@@ -251,6 +256,199 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
             }
 
             return View(lopHoc);
+        }
+
+        // GET: LopHocs/XuatDanhSachHocVienExcel/5
+        public async Task<IActionResult> XuatDanhSachHocVienExcel(int id)
+        {
+            var lopHoc = await _context.LopHocs
+                .Include(l => l.KhoaHoc)
+                .Include(l => l.GiangVien)
+                .Include(l => l.DangKyHocs!)
+                    .ThenInclude(d => d.HocVien)
+                .FirstOrDefaultAsync(l => l.MaLop == id);
+
+            if (lopHoc == null)
+            {
+                return NotFound();
+            }
+
+            var dsDangKy = lopHoc.DangKyHocs?
+                .OrderBy(d => d.HocVien?.HoTen ?? "")
+                .ToList() ?? new List<DangKyHoc>();
+
+            using var workbook = new XLWorkbook();
+            var ws = workbook.Worksheets.Add("DanhSachHocVien");
+            ws.ShowGridLines = true;
+
+            var unetiPrimaryColor = XLColor.FromArgb(30, 58, 138); // #1E3A8A
+            var unetiSecondaryColor = XLColor.FromArgb(2, 132, 199); // #0284C7
+            var borderColor = XLColor.FromArgb(203, 213, 225);
+
+            // Banner tiêu đề
+            ws.Range("A1:K1").Merge().Value = "TRUNG TÂM NGOẠI NGỮ UNETI - DỰ ÁN UNETI04 (TI17A2HN)";
+            ws.Cell("A1").Style.Font.Bold = true;
+            ws.Cell("A1").Style.Font.FontSize = 13;
+            ws.Cell("A1").Style.Font.FontColor = XLColor.White;
+            ws.Cell("A1").Style.Fill.BackgroundColor = unetiPrimaryColor;
+            ws.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            ws.Row(1).Height = 26;
+
+            ws.Range("A2:K2").Merge().Value = $"DANH SÁCH HỌC VIÊN & BẢNG ĐIỂM DANH LỚP: {lopHoc.TenLop.ToUpper()}";
+            ws.Cell("A2").Style.Font.Bold = true;
+            ws.Cell("A2").Style.Font.FontSize = 14;
+            ws.Cell("A2").Style.Font.FontColor = XLColor.White;
+            ws.Cell("A2").Style.Fill.BackgroundColor = unetiSecondaryColor;
+            ws.Cell("A2").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            ws.Row(2).Height = 28;
+
+            // Thông tin lớp học
+            int rInfo = 4;
+            ws.Cell(rInfo, 1).Value = "Khóa học:";
+            ws.Cell(rInfo, 1).Style.Font.Bold = true;
+            ws.Cell(rInfo, 2).Value = lopHoc.KhoaHoc?.TenKhoaHoc ?? "";
+            ws.Cell(rInfo, 5).Value = "Giảng viên:";
+            ws.Cell(rInfo, 5).Style.Font.Bold = true;
+            ws.Cell(rInfo, 6).Value = lopHoc.GiangVien?.HoTen ?? "Chưa phân công";
+
+            rInfo++;
+            ws.Cell(rInfo, 1).Value = "Lịch học:";
+            ws.Cell(rInfo, 1).Style.Font.Bold = true;
+            ws.Cell(rInfo, 2).Value = lopHoc.LichHoc;
+            ws.Cell(rInfo, 5).Value = "Phòng học:";
+            ws.Cell(rInfo, 5).Style.Font.Bold = true;
+            ws.Cell(rInfo, 6).Value = lopHoc.PhongHoc;
+
+            rInfo++;
+            ws.Cell(rInfo, 1).Value = "Khai giảng:";
+            ws.Cell(rInfo, 1).Style.Font.Bold = true;
+            ws.Cell(rInfo, 2).Value = lopHoc.NgayKhaiGiang.ToString("dd/MM/yyyy");
+            ws.Cell(rInfo, 5).Value = "Sĩ số hiện tại:";
+            ws.Cell(rInfo, 5).Style.Font.Bold = true;
+            int daXacNhan = dsDangKy.Count(d => d.TrangThai == "Đã xác nhận");
+            ws.Cell(rInfo, 6).Value = $"{daXacNhan} / {lopHoc.SoLuongToiDa} học viên (Tổng đăng ký: {dsDangKy.Count})";
+
+            // Bảng danh sách học viên
+            int rTable = 8;
+            string[] headers =
+            {
+                "STT",
+                "Mã HV",
+                "Họ và tên",
+                "Ngày sinh",
+                "Giới tính",
+                "Số điện thoại",
+                "Email",
+                "Ngày đăng ký",
+                "Học phí",
+                "Trạng thái học phí",
+                "Ký tên / Điểm danh"
+            };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                var cell = ws.Cell(rTable, i + 1);
+                cell.Value = headers[i];
+                cell.Style.Font.Bold = true;
+                cell.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                cell.Style.Border.OutsideBorderColor = borderColor;
+            }
+            ws.Row(rTable).Height = 24;
+
+            int stt = 1;
+            int rData = rTable;
+            foreach (var dk in dsDangKy)
+            {
+                rData++;
+                ws.Cell(rData, 1).Value = stt++;
+                ws.Cell(rData, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                ws.Cell(rData, 2).Value = dk.HocVien?.MaHocVien ?? dk.MaHocVien;
+                ws.Cell(rData, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                ws.Cell(rData, 3).Value = dk.HocVien?.HoTen ?? "";
+                ws.Cell(rData, 3).Style.Font.Bold = true;
+
+                ws.Cell(rData, 4).Value = dk.HocVien?.NgaySinh.ToString("dd/MM/yyyy") ?? "";
+                ws.Cell(rData, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                ws.Cell(rData, 5).Value = dk.HocVien?.GioiTinh ?? "";
+                ws.Cell(rData, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                ws.Cell(rData, 6).Value = dk.HocVien?.SoDienThoai ?? "";
+                ws.Cell(rData, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                ws.Cell(rData, 7).Value = dk.HocVien?.Email ?? "";
+
+                ws.Cell(rData, 8).Value = dk.NgayDangKy.ToString("dd/MM/yyyy");
+                ws.Cell(rData, 8).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                ws.Cell(rData, 9).Value = (double)dk.HocPhi;
+                ws.Cell(rData, 9).Style.NumberFormat.Format = "#,##0 \"đ\"";
+                ws.Cell(rData, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+                ws.Cell(rData, 10).Value = dk.TrangThai;
+                ws.Cell(rData, 10).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                if (dk.TrangThai == "Đã xác nhận")
+                {
+                    ws.Cell(rData, 10).Style.Font.FontColor = XLColor.FromArgb(22, 101, 52);
+                    ws.Cell(rData, 10).Style.Font.Bold = true;
+                }
+
+                ws.Cell(rData, 11).Value = ""; // Cột ký tên / điểm danh trống để in ấn
+
+                for (int c = 1; c <= 11; c++)
+                {
+                    ws.Cell(rData, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    ws.Cell(rData, c).Style.Border.OutsideBorderColor = borderColor;
+                }
+            }
+
+            if (!dsDangKy.Any())
+            {
+                rData++;
+                ws.Range(rData, 1, rData, 11).Merge().Value = "Lớp học hiện tại chưa có học viên nào đăng ký.";
+                ws.Cell(rData, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Cell(rData, 1).Style.Font.Italic = true;
+                for (int c = 1; c <= 11; c++)
+                {
+                    ws.Cell(rData, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    ws.Cell(rData, c).Style.Border.OutsideBorderColor = borderColor;
+                }
+            }
+
+            // Phần ký tên cuối trang
+            int rSign = rData + 3;
+            ws.Cell(rSign, 2).Value = "GIẢNG VIÊN PHỤ TRÁCH";
+            ws.Cell(rSign, 2).Style.Font.Bold = true;
+            ws.Cell(rSign, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            ws.Cell(rSign, 9).Value = $"Hà Nội, ngày {DateTime.Now:dd} tháng {DateTime.Now:MM} năm {DateTime.Now:yyyy}";
+            ws.Cell(rSign, 9).Style.Font.Italic = true;
+            ws.Cell(rSign, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            ws.Cell(rSign + 1, 9).Value = "NGƯỜI LẬP DANH SÁCH";
+            ws.Cell(rSign + 1, 9).Style.Font.Bold = true;
+            ws.Cell(rSign + 1, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            ws.Cell(rSign + 4, 2).Value = lopHoc.GiangVien?.HoTen ?? "(Ký và ghi rõ họ tên)";
+            ws.Cell(rSign + 4, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            var nguoiLap = HttpContext.Session.GetString("HoTen") ?? "Ban Quản lý Đào tạo";
+            ws.Cell(rSign + 4, 9).Value = nguoiLap;
+            ws.Cell(rSign + 4, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            ws.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            string cleanClassName = System.Text.RegularExpressions.Regex.Replace(lopHoc.TenLop, @"[^a-zA-Z0-9_\-]", "_");
+            string fileName = $"DanhSachHocVien_{cleanClassName}_{DateTime.Now:yyyyMMdd}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         // GET: LopHocs/Create (Admin)
@@ -264,7 +462,9 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
                 NgayKhaiGiang = DateTime.Today.AddDays(7),
                 TrangThai = "Đang tuyển sinh",
                 SoLuongToiDa = 25,
-                HocPhi = 1000000
+                HocPhi = 1000000,
+                PhongHoc = "Phòng A101",
+                LichHoc = "T2 - T4 - T6 (18:00 - 20:00)"
             };
             return View(model);
         }
@@ -277,10 +477,30 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(lopHoc);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Thêm mới lớp học '{lopHoc.TenLop}' thành công!";
-                return RedirectToAction(nameof(Index));
+                // 1. Kiểm tra trùng phòng học & ca học với các lớp đang hoạt động
+                var trungPhong = await TimLopTrungPhongVaCaHocAsync(null, lopHoc.PhongHoc, lopHoc.LichHoc);
+                if (trungPhong != null)
+                {
+                    ModelState.AddModelError("PhongHoc", $"Trùng phòng học! Phòng '{lopHoc.PhongHoc}' đã có lớp '{trungPhong.TenLop}' học vào ca này ({trungPhong.LichHoc}). Vui lòng đổi phòng hoặc chọn ca học khác.");
+                }
+
+                // 2. Kiểm tra trùng lịch giảng dạy của giảng viên (nếu có chọn giảng viên)
+                if (lopHoc.MaGiangVien.HasValue && lopHoc.MaGiangVien.Value > 0)
+                {
+                    var trungGv = await TimLopTrungGiangVienVaCaHocAsync(null, lopHoc.MaGiangVien.Value, lopHoc.LichHoc);
+                    if (trungGv != null)
+                    {
+                        ModelState.AddModelError("MaGiangVien", $"Trùng ca dạy! Giảng viên '{trungGv.GiangVien?.HoTen}' đã có lịch dạy lớp '{trungGv.TenLop}' ({trungGv.LichHoc}) tại phòng {trungGv.PhongHoc}.");
+                    }
+                }
+
+                if (ModelState.IsValid)
+                {
+                    _context.Add(lopHoc);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Thêm mới lớp học '{lopHoc.TenLop}' thành công!";
+                    return RedirectToAction(nameof(Index));
+                }
             }
             ViewData["MaKhoaHoc"] = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", lopHoc.MaKhoaHoc);
             ViewData["MaGiangVien"] = new SelectList(await _context.GiangViens.Where(g => g.TrangThai).OrderBy(g => g.HoTen).ToListAsync(), "MaGiangVien", "HoTen", lopHoc.MaGiangVien);
@@ -319,28 +539,192 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                // 1. Kiểm tra trùng phòng học & ca học (ngoại trừ chính lớp này)
+                var trungPhong = await TimLopTrungPhongVaCaHocAsync(lopHoc.MaLop, lopHoc.PhongHoc, lopHoc.LichHoc);
+                if (trungPhong != null)
                 {
-                    _context.Update(lopHoc);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Cập nhật lớp học '{lopHoc.TenLop}' thành công!";
+                    ModelState.AddModelError("PhongHoc", $"Trùng phòng học! Phòng '{lopHoc.PhongHoc}' đã có lớp '{trungPhong.TenLop}' học vào ca này ({trungPhong.LichHoc}). Vui lòng đổi phòng hoặc chọn ca học khác.");
                 }
-                catch (DbUpdateConcurrencyException)
+
+                // 2. Kiểm tra trùng lịch giảng dạy của giảng viên (nếu có chọn giảng viên)
+                if (lopHoc.MaGiangVien.HasValue && lopHoc.MaGiangVien.Value > 0)
                 {
-                    if (!LopHocExists(lopHoc.MaLop))
+                    var trungGv = await TimLopTrungGiangVienVaCaHocAsync(lopHoc.MaLop, lopHoc.MaGiangVien.Value, lopHoc.LichHoc);
+                    if (trungGv != null)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        ModelState.AddModelError("MaGiangVien", $"Trùng ca dạy! Giảng viên '{trungGv.GiangVien?.HoTen}' đã có lịch dạy lớp '{trungGv.TenLop}' ({trungGv.LichHoc}) tại phòng {trungGv.PhongHoc}.");
                     }
                 }
-                return RedirectToAction(nameof(Index));
+
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        _context.Update(lopHoc);
+                        await _context.SaveChangesAsync();
+                        TempData["SuccessMessage"] = $"Cập nhật lớp học '{lopHoc.TenLop}' thành công!";
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!LopHocExists(lopHoc.MaLop))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
             }
             ViewData["MaKhoaHoc"] = new SelectList(await _context.KhoaHocs.OrderBy(k => k.TenKhoaHoc).ToListAsync(), "MaKhoaHoc", "TenKhoaHoc", lopHoc.MaKhoaHoc);
             ViewData["MaGiangVien"] = new SelectList(await _context.GiangViens.Where(g => g.TrangThai).OrderBy(g => g.HoTen).ToListAsync(), "MaGiangVien", "HoTen", lopHoc.MaGiangVien);
             return View(lopHoc);
+        }
+
+        // =========================================================================
+        // TIỆN ÍCH KIỂM TRA TRÙNG PHÒNG HỌC & CA HỌC (AJAX & SERVER-SIDE)
+        // =========================================================================
+
+        /// <summary>
+        /// Tìm lớp học đang hoạt động bị trùng phòng và ca học
+        /// </summary>
+        private async Task<LopHoc?> TimLopTrungPhongVaCaHocAsync(int? maLopHienTai, string? phongHoc, string? lichHoc)
+        {
+            if (string.IsNullOrWhiteSpace(phongHoc) || string.IsNullOrWhiteSpace(lichHoc))
+                return null;
+
+            var dsLop = await _context.LopHocs
+                .Include(l => l.KhoaHoc)
+                .Include(l => l.GiangVien)
+                .Where(l => l.TrangThai != "Đã kết thúc" && l.TrangThai != "Đã hủy")
+                .ToListAsync();
+
+            foreach (var lop in dsLop)
+            {
+                if (maLopHienTai.HasValue && lop.MaLop == maLopHienTai.Value)
+                    continue;
+
+                if (LichHocHelper.KiemTraTrungPhongVaCaHoc(phongHoc, lichHoc, lop.PhongHoc, lop.LichHoc))
+                {
+                    return lop;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Tìm lớp học mà giảng viên đã có lịch dạy trong cùng ca học
+        /// </summary>
+        private async Task<LopHoc?> TimLopTrungGiangVienVaCaHocAsync(int? maLopHienTai, int maGiangVien, string? lichHoc)
+        {
+            if (maGiangVien <= 0 || string.IsNullOrWhiteSpace(lichHoc))
+                return null;
+
+            var dsLop = await _context.LopHocs
+                .Include(l => l.KhoaHoc)
+                .Include(l => l.GiangVien)
+                .Where(l => l.MaGiangVien == maGiangVien && l.TrangThai != "Đã kết thúc" && l.TrangThai != "Đã hủy")
+                .ToListAsync();
+
+            foreach (var lop in dsLop)
+            {
+                if (maLopHienTai.HasValue && lop.MaLop == maLopHienTai.Value)
+                    continue;
+
+                if (LichHocHelper.KiemTraTrungLich(lichHoc, lop.LichHoc))
+                {
+                    return lop;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// API kiểm tra trùng phòng học & ca học theo thời gian thực (Real-time AJAX Check)
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> KiemTraTrungLich(int? maLop, string? phongHoc, string? lichHoc, int? maGiangVien)
+        {
+            var trungPhong = await TimLopTrungPhongVaCaHocAsync(maLop, phongHoc, lichHoc);
+            var trungGv = (maGiangVien.HasValue && maGiangVien.Value > 0)
+                ? await TimLopTrungGiangVienVaCaHocAsync(maLop, maGiangVien.Value, lichHoc)
+                : null;
+
+            return Json(new
+            {
+                trungPhong = trungPhong != null,
+                thongBaoPhong = trungPhong != null
+                    ? $"Cảnh báo: Phòng '{phongHoc}' đã có lớp '{trungPhong.TenLop}' ({trungPhong.KhoaHoc?.TenKhoaHoc}) học vào ca này ({trungPhong.LichHoc})!"
+                    : "Phòng học trống và khả dụng cho ca học này.",
+                tenLopTrungPhong = trungPhong?.TenLop ?? "",
+                trungGiangVien = trungGv != null,
+                thongBaoGiangVien = trungGv != null
+                    ? $"Cảnh báo: Giảng viên đã có lịch dạy lớp '{trungGv.TenLop}' ({trungGv.LichHoc}) tại phòng {trungGv.PhongHoc}!"
+                    : "Giảng viên khả dụng cho ca học này.",
+                tenLopTrungGiangVien = trungGv?.TenLop ?? ""
+            });
+        }
+
+        /// <summary>
+        /// Trang hiển thị Thời khóa biểu ma trận Phòng học & Ca học và rà soát toàn bộ các xung đột
+        /// </summary>
+        [AuthorizeRole("Admin")]
+        public async Task<IActionResult> LichPhongHoc(string? phongHoc, string? caHoc)
+        {
+            var cacLopHoatDong = await _context.LopHocs
+                .Include(l => l.KhoaHoc)
+                .Include(l => l.GiangVien)
+                .Where(l => l.TrangThai != "Đã kết thúc" && l.TrangThai != "Đã hủy")
+                .ToListAsync();
+
+            // Danh sách phòng học
+            var dsPhong = cacLopHoatDong
+                .Select(l => l.PhongHoc.Trim())
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Distinct()
+                .Union(LichHocHelper.PhongHocPhoBien)
+                .OrderBy(p => p)
+                .ToList();
+
+            var dsCa = LichHocHelper.CaHocPhoBien.ToList();
+
+            // Quét toàn bộ để tìm các cặp xung đột
+            var danhSachTrung = new List<CanhBaoTrungLichItem>();
+            for (int i = 0; i < cacLopHoatDong.Count; i++)
+            {
+                for (int j = i + 1; j < cacLopHoatDong.Count; j++)
+                {
+                    var l1 = cacLopHoatDong[i];
+                    var l2 = cacLopHoatDong[j];
+
+                    if (LichHocHelper.KiemTraTrungPhongVaCaHoc(l1.PhongHoc, l1.LichHoc, l2.PhongHoc, l2.LichHoc))
+                    {
+                        danhSachTrung.Add(new CanhBaoTrungLichItem
+                        {
+                            PhongHoc = l1.PhongHoc,
+                            Lop1 = l1,
+                            Lop2 = l2,
+                            LyDoTrung = $"Trùng phòng '{l1.PhongHoc}': Lớp '{l1.TenLop}' ({l1.LichHoc}) giao lịch với Lớp '{l2.TenLop}' ({l2.LichHoc})"
+                        });
+                    }
+                }
+            }
+
+            var vm = new LichPhongHocViewModel
+            {
+                DanhSachPhongHoc = dsPhong,
+                DanhSachCaHoc = dsCa,
+                TatCaLopHoatDong = cacLopHoatDong,
+                DanhSachTrungLich = danhSachTrung,
+                PhongHocLoc = phongHoc,
+                CaHocLoc = caHoc,
+                TongSoLopDangHoc = cacLopHoatDong.Count,
+                TongSoPhongSuDung = cacLopHoatDong.Select(l => LichHocHelper.NormalizeRoom(l.PhongHoc)).Distinct().Count()
+            };
+
+            return View(vm);
         }
 
         // GET: LopHocs/Delete/5 (Admin)
