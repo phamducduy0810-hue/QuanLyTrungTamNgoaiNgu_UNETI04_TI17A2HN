@@ -58,31 +58,23 @@
     </div>
 
     <!-- BẢNG DANH SÁCH HỌC VIÊN -->
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5">
-        <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2"
-             style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 52%, #0284c7 100%); border-bottom: 3.5px solid #f59e0b; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);">
-            <div class="d-flex align-items-center">
-                <div class="d-flex justify-content-center align-items-center rounded-3 p-2 me-3 shadow-sm"
-                     style="width: 44px; height: 44px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(251, 191, 36, 0.1) 100%); border: 1.5px solid rgba(245, 158, 11, 0.6);">
-                    <i class="fa-solid fa-users fa-lg" style="color: #fbbf24; filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.5));"></i>
-                </div>
-                <div>
-                    <h5 class="mb-0 fw-bolder text-uppercase d-flex align-items-center flex-wrap" style="letter-spacing: 0.6px;">
-                        <span style="color: #fbbf24; text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);">
-                            DANH SÁCH HỌC VIÊN
-                        </span>
-                        <span class="mx-2 fw-light" style="color: #cbd5e1;">-</span>
-                        <span style="color: #ffffff; text-shadow: 0 2px 6px rgba(0,0,0,0.4);">
-                            CHÍNH THỨC CỦA LỚP
-                        </span>
-                    </h5>
-                    <div class="small mt-1 text-white-50" style="font-size: 0.8rem;">
-                        <i class="fa-solid fa-graduation-cap text-warning me-1"></i> Module 3 - Diêm Đức Hùng (23103100099)
-                    </div>
-                </div>
+    <div class="card shadow border-0 rounded-4 overflow-hidden mb-5" style="box-shadow: 0 8px 24px rgba(30, 58, 138, 0.15) !important;">
+        <div class="card-header p-4 text-white border-0 d-flex justify-content-between align-items-center flex-wrap gap-2"
+             style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%);">
+            <div>
+                <span class="badge px-3 py-1 mb-2 fw-bold text-uppercase shadow-sm" 
+                      style="background: #f59e0b; color: #0f172a; font-size: 0.75rem; letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-users me-1"></i> Danh sách học viên
+                </span>
+                <h4 class="fw-bold mb-1 text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-user-graduate me-2 text-warning"></i>HỌC VIÊN CHÍNH THỨC - LỚP @Model.TenLop
+                </h4>
+                <p class="mb-0 text-white-50" style="font-size: 0.9rem;">
+                    Danh sách học viên đã đăng ký và xác nhận tham gia lớp học
+                </p>
             </div>
             <span class="badge px-3 py-2 rounded-pill fw-bold border" 
-                  style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border-color: #34d399 !important; font-size: 0.82rem;">
+                  style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border-color: #34d399 !important; font-size: 0.85rem;">
                 <i class="fa-solid fa-user-check me-1"></i> @(danhSachDangKy?.Count ?? 0) học viên đã đăng ký
             </span>
         </div>
