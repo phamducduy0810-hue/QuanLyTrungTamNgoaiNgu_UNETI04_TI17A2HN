@@ -58,26 +58,47 @@
     </div>
 
     <!-- BẢNG DANH SÁCH HỌC VIÊN -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">
-                <i class="bi bi-person-lines-fill me-2"></i>DANH SÁCH HỌC VIÊN CHÍNH THỨC
-            </h5>
-            <span class="badge bg-success px-3 py-2">@(danhSachDangKy?.Count ?? 0) học viên đã đăng ký</span>
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5">
+        <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2"
+             style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 52%, #0284c7 100%); border-bottom: 3.5px solid #f59e0b; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);">
+            <div class="d-flex align-items-center">
+                <div class="d-flex justify-content-center align-items-center rounded-3 p-2 me-3 shadow-sm"
+                     style="width: 44px; height: 44px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(251, 191, 36, 0.1) 100%); border: 1.5px solid rgba(245, 158, 11, 0.6);">
+                    <i class="fa-solid fa-users fa-lg" style="color: #fbbf24; filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.5));"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0 fw-bolder text-uppercase d-flex align-items-center flex-wrap" style="letter-spacing: 0.6px;">
+                        <span style="color: #fbbf24; text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);">
+                            DANH SÁCH HỌC VIÊN
+                        </span>
+                        <span class="mx-2 fw-light" style="color: #cbd5e1;">-</span>
+                        <span style="color: #ffffff; text-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+                            CHÍNH THỨC CỦA LỚP
+                        </span>
+                    </h5>
+                    <div class="small mt-1 text-white-50" style="font-size: 0.8rem;">
+                        <i class="fa-solid fa-graduation-cap text-warning me-1"></i> Module 3 - Diêm Đức Hùng (23103100099)
+                    </div>
+                </div>
+            </div>
+            <span class="badge px-3 py-2 rounded-pill fw-bold border" 
+                  style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border-color: #34d399 !important; font-size: 0.82rem;">
+                <i class="fa-solid fa-user-check me-1"></i> @(danhSachDangKy?.Count ?? 0) học viên đã đăng ký
+            </span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-striped mb-0 align-middle">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th class="text-center" style="width: 60px;">STT</th>
-                            <th class="text-center" style="width: 80px;">Mã HV</th>
-                            <th>Họ và Tên</th>
-                            <th class="text-center">Giới tính</th>
-                            <th>Ngày sinh</th>
-                            <th>Số điện thoại</th>
-                            <th>Email</th>
-                            <th class="text-center">Ngày đăng ký</th>
+                    <thead style="background: #f1f5f9; color: #1e293b; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                        <tr class="border-bottom">
+                            <th class="text-center py-3" style="width: 60px;">STT</th>
+                            <th class="text-center py-3" style="width: 80px;">Mã HV</th>
+                            <th class="py-3">Họ và Tên</th>
+                            <th class="text-center py-3">Giới tính</th>
+                            <th class="py-3">Ngày sinh</th>
+                            <th class="py-3">Số điện thoại</th>
+                            <th class="py-3">Email</th>
+                            <th class="text-center py-3">Ngày đăng ký</th>
                         </tr>
                     </thead>
                     <tbody>
