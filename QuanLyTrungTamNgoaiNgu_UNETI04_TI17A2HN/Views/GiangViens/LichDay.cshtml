@@ -12,22 +12,26 @@
 
 <div class="container py-4">
     <!-- BANNER CHÀO MỪNG GIẢNG VIÊN -->
-    <div class="card shadow-sm border-0 bg-primary text-white mb-4 rounded-4 overflow-hidden">
+    <div class="card shadow border-0 text-white mb-4 rounded-4 overflow-hidden" 
+         style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%); box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);">
         <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
-                <span class="badge bg-warning text-dark px-3 py-1 mb-2 fw-bold text-uppercase">Cổng thông tin Giảng viên</span>
-                <h3 class="fw-bold mb-1">
-                    <i class="bi bi-person-video3 me-2"></i>Xin chào, @(gv?.HoTen ?? "Giảng viên")! 
+                <span class="badge px-3 py-1 mb-2 fw-bold text-uppercase shadow-sm" 
+                      style="background: #f59e0b; color: #0f172a; font-size: 0.75rem; letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-graduation-cap me-1"></i> Cổng thông tin Giảng viên
+                </span>
+                <h3 class="fw-bold mb-1" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    <i class="fa-solid fa-chalkboard-user me-2 text-warning"></i>Xin chào, @(gv?.HoTen ?? "Giảng viên")! 
                 </h3>
                 <p class="mb-0 text-white-50">
-                    Chuyên môn: <strong>@(gv?.ChuyenMon ?? "Chung")</strong> | 
-                    Trình độ: <strong>@(gv?.TrinhDo ?? "Chưa cập nhật")</strong> | 
-                    Email: <strong>@(gv?.Email)</strong>
+                    Chuyên môn: <strong class="text-white">@(gv?.ChuyenMon ?? "Chung")</strong> | 
+                    Trình độ: <strong class="text-white">@(gv?.TrinhDo ?? "Chưa cập nhật")</strong> | 
+                    Email: <strong class="text-white">@(gv?.Email)</strong>
                 </p>
             </div>
             <div class="d-flex gap-2">
-                <a asp-action="HoSoCaNhan" class="btn btn-light px-3 py-2 fw-bold shadow-sm">
-                    <i class="bi bi-person-gear me-1"></i> Hồ sơ cá nhân
+                <a asp-action="HoSoCaNhan" class="btn btn-light px-3 py-2 fw-bold shadow-sm rounded-pill text-primary">
+                    <i class="fa-solid fa-user-gear me-1"></i> Hồ sơ cá nhân
                 </a>
             </div>
         </div>
@@ -78,27 +82,36 @@
     </div>
 
     <!-- DANH SÁCH LỚP HỌC ĐANG PHỤ TRÁCH -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">
-                <i class="bi bi-calendar-week me-2 text-warning"></i>LỊCH DẠY & DANH SÁCH LỚP HỌC CỦA BẠN
-            </h5>
-            <small class="text-white-50">Module 3 - Diêm Đức Hùng (23103100099)</small>
+    <div class="card shadow border-0 rounded-4 overflow-hidden mb-5" style="box-shadow: 0 8px 24px rgba(30, 58, 138, 0.15) !important;">
+        <div class="card-header p-4 text-white border-0"
+             style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%);">
+            <div>
+                <span class="badge px-3 py-1 mb-2 fw-bold text-uppercase shadow-sm" 
+                      style="background: #f59e0b; color: #0f172a; font-size: 0.75rem; letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-calendar-days me-1"></i> Lịch trình giảng dạy
+                </span>
+                <h4 class="fw-bold mb-1 text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-calendar-week me-2 text-warning"></i>LỊCH DẠY &amp; DANH SÁCH LỚP HỌC CỦA BẠN
+                </h4>
+                <p class="mb-0 text-white-50" style="font-size: 0.9rem;">
+                    Danh sách các lớp học được phân công giảng dạy chính thức tại <strong class="text-white">Trung tâm Ngoại ngữ UNETI</strong>
+                </p>
+            </div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-striped mb-0 align-middle">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th class="text-center" style="width: 70px;">Mã lớp</th>
-                            <th>Tên lớp học</th>
-                            <th>Khóa học</th>
-                            <th>Lịch học</th>
-                            <th>Phòng học</th>
-                            <th>Ngày khai giảng</th>
-                            <th class="text-center">Sĩ số</th>
-                            <th class="text-center">Trạng thái</th>
-                            <th class="text-center" style="width: 190px;">Thao tác</th>
+                    <thead style="background: #f1f5f9; color: #1e293b; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                        <tr class="border-bottom">
+                            <th class="text-center py-3" style="width: 70px;">Mã lớp</th>
+                            <th class="py-3">Tên lớp học</th>
+                            <th class="py-3">Khóa học</th>
+                            <th class="py-3">Lịch học</th>
+                            <th class="py-3">Phòng học</th>
+                            <th class="py-3">Ngày khai giảng</th>
+                            <th class="text-center py-3">Sĩ số</th>
+                            <th class="text-center py-3">Trạng thái</th>
+                            <th class="text-center py-3" style="width: 190px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>

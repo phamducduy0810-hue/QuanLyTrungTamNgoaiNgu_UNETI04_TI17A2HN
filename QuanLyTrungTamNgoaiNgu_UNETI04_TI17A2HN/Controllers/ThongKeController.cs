@@ -155,969 +155,293 @@ namespace QuanLyTrungTamNgoaiNgu_UNETI04_TI17A2HN.Controllers
         }
 
         // =========================================================================
-        // CHỨC NĂNG 1: XUẤT BÁO CÁO THỐNG KÊ RA FILE EXCEL (.XLSX)
+        // [MỚI] 1. XUẤT BÁO CÁO THỐNG KÊ RA FILE EXCEL (4 sheet) - dùng ClosedXML
         // =========================================================================
+        // GET: /ThongKe/ExportExcel
         public async Task<IActionResult> ExportExcel()
         {
-            // Lấy toàn bộ dữ liệu thống kê
-            var tongKhoaHoc = await _context.KhoaHocs.CountAsync();
-            var tongLopHoc = await _context.LopHocs.CountAsync();
-            var tongHocVien = await _context.HocViens.CountAsync();
-            var tongLuotDangKy = await _context.DangKyHocs.CountAsync();
-            var dangKyChoXacNhan = await _context.DangKyHocs.CountAsync(d => d.TrangThai == TrangThaiDangKy.ChoXacNhan);
-            var dangKyDaXacNhan = await _context.DangKyHocs.CountAsync(d => d.TrangThai == TrangThaiDangKy.DaXacNhan);
-            var dangKyDaHuy = await _context.DangKyHocs.CountAsync(d => d.TrangThai == TrangThaiDangKy.DaHuy);
-            var lopDangTuyenSinh = await _context.LopHocs.CountAsync(l => l.TrangThai == "Đang tuyển sinh");
+            // Bước 1: lấy dữ liệu từ database
+            var dsKhoaHoc = await _context.KhoaHocs.Include(k => k.LopHocs).ToListAsync();
+            var dsLop = await _context.LopHocs.Include(l => l.DangKyHocs).ToListAsync();
+            var dsDangKy = await _context.DangKyHocs.Include(d => d.LopHoc).ToListAsync();
+            int tongHocVien = await _context.HocViens.CountAsync();
 
-            var dsKhoaHoc = await _context.KhoaHocs
-                .Include(k => k.LopHocs)
-                .ToListAsync();
+            // Học phí chỉ tính các đăng ký "Đã xác nhận"
+            var daXacNhan = dsDangKy.Where(d => d.TrangThai == TrangThaiDangKy.DaXacNhan).ToList();
 
-            var dsLopHoc = await _context.LopHocs
-                .Include(l => l.KhoaHoc)
-                .Include(l => l.GiangVien)
-                .Include(l => l.DangKyHocs)
-                .ToListAsync();
+            // Bước 2: tạo file Excel gồm 4 sheet
+            using var wb = new XLWorkbook();
 
-            var dsDangKy = await _context.DangKyHocs
-                .Include(d => d.HocVien)
-                .Include(d => d.LopHoc)
-                    .ThenInclude(l => l!.KhoaHoc)
-                .OrderByDescending(d => d.NgayDangKy)
-                .ToListAsync();
-
-            var tongHocPhiDaXacNhan = dsDangKy
-                .Where(d => d.TrangThai == TrangThaiDangKy.DaXacNhan)
-                .Sum(d => d.HocPhi);
-
-            var nguoiXuat = HttpContext.Session.GetString("HoTen") ?? "Ban Quản trị UNETI";
-            var thoiGianXuat = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-
-            using var workbook = new XLWorkbook();
-
-            // Định dạng màu chuẩn nhận diện UNETI
-            var unetiPrimaryColor = XLColor.FromArgb(30, 58, 138); // #1E3A8A
-            var unetiSecondaryColor = XLColor.FromArgb(2, 132, 199); // #0284C7
-            var tableHeaderColor = XLColor.FromArgb(241, 245, 249);
-            var borderColor = XLColor.FromArgb(203, 213, 225);
-
-            // ---------------------------------------------------------------------
-            // SHEET 1: TỔNG QUAN CHỈ SỐ
-            // ---------------------------------------------------------------------
-            var ws1 = workbook.Worksheets.Add("Tổng Quan");
-            ws1.ShowGridLines = true;
-
-            // Tiêu đề banner
-            ws1.Range("A1:G1").Merge().Value = "TRUNG TÂM NGOẠI NGỮ UNETI - DỰ ÁN UNETI04 (TI17A2HN)";
-            ws1.Cell("A1").Style.Font.Bold = true;
-            ws1.Cell("A1").Style.Font.FontSize = 14;
-            ws1.Cell("A1").Style.Font.FontColor = XLColor.White;
-            ws1.Cell("A1").Style.Fill.BackgroundColor = unetiPrimaryColor;
-            ws1.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws1.Row(1).Height = 28;
-
-            ws1.Range("A2:G2").Merge().Value = "BÁO CÁO THỐNG KÊ TỔNG QUAN HOẠT ĐỘNG & DOANH THU";
-            ws1.Cell("A2").Style.Font.Bold = true;
-            ws1.Cell("A2").Style.Font.FontSize = 13;
-            ws1.Cell("A2").Style.Font.FontColor = XLColor.White;
-            ws1.Cell("A2").Style.Fill.BackgroundColor = unetiSecondaryColor;
-            ws1.Cell("A2").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws1.Row(2).Height = 24;
-
-            ws1.Cell("A3").Value = $"Thời gian xuất báo cáo: {thoiGianXuat} | Người lập: {nguoiXuat}";
-            ws1.Cell("A3").Style.Font.Italic = true;
-            ws1.Cell("A3").Style.Font.FontColor = XLColor.FromHtml("#475569");
-            ws1.Range("A3:G3").Merge();
-
-            // Phần 1: Quy mô trung tâm
-            int r1 = 5;
-            ws1.Cell(r1, 1).Value = "I. QUY MÔ TRUNG TÂM & LỚP HỌC";
-            ws1.Cell(r1, 1).Style.Font.Bold = true;
-            ws1.Cell(r1, 1).Style.Font.FontSize = 11;
-            ws1.Cell(r1, 1).Style.Font.FontColor = unetiPrimaryColor;
-
-            r1++;
-            string[] headersQuyMo = { "STT", "Chỉ số thống kê", "Số lượng", "Đơn vị tính", "Ghi chú" };
-            for (int i = 0; i < headersQuyMo.Length; i++)
+            // Sheet 1: Tổng quan
+            TaoSheet(wb, "TongQuan", "TỔNG QUAN HOẠT ĐỘNG TRUNG TÂM", new[] { "Chỉ số", "Giá trị" }, new List<object[]>
             {
-                var c = ws1.Cell(r1, i + 1);
-                c.Value = headersQuyMo[i];
-                c.Style.Font.Bold = true;
-                c.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
-                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                c.Style.Border.OutsideBorderColor = borderColor;
-            }
+                new object[] { "Tổng số khóa học", dsKhoaHoc.Count },
+                new object[] { "Tổng số lớp học", dsLop.Count },
+                new object[] { "Tổng số học viên", tongHocVien },
+                new object[] { "Tổng lượt đăng ký", dsDangKy.Count },
+                new object[] { "Tổng học phí đã xác nhận (đ)", (double)daXacNhan.Sum(d => d.HocPhi) }
+            });
 
-            var dsQuyMo = new[]
+            // Sheet 2: Số lớp và học phí theo từng khóa học
+            var dongKhoaHoc = dsKhoaHoc.Select(k => new object[]
             {
-                ("1", "Tổng số chương trình / khóa học", (double)tongKhoaHoc, "Khóa", "Bao gồm cả các cấp độ ngoại ngữ"),
-                ("2", "Tổng số lớp học đã tạo", (double)tongLopHoc, "Lớp", "Tổng số lớp trên hệ thống"),
-                ("3", "Số lớp đang tuyển sinh", (double)lopDangTuyenSinh, "Lớp", "Lớp đang nhận học viên đăng ký"),
-                ("4", "Tổng số học viên", (double)tongHocVien, "Học viên", "Học viên đã mở tài khoản")
-            };
+                k.TenKhoaHoc,
+                k.LopHocs?.Count ?? 0,
+                (double)daXacNhan.Where(d => d.LopHoc!.MaKhoaHoc == k.MaKhoaHoc).Sum(d => d.HocPhi)
+            }).ToList();
+            TaoSheet(wb, "TheoKhoaHoc", "SỐ LỚP VÀ HỌC PHÍ THEO KHÓA HỌC",
+                new[] { "Khóa học", "Số lớp", "Học phí (đ)" }, dongKhoaHoc, coTong: true);
 
-            foreach (var item in dsQuyMo)
+            // Sheet 3: Đăng ký và học phí theo từng lớp
+            var dongLop = dsLop.Select(l => new object[]
             {
-                r1++;
-                ws1.Cell(r1, 1).Value = item.Item1;
-                ws1.Cell(r1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws1.Cell(r1, 2).Value = item.Item2;
-                ws1.Cell(r1, 3).Value = item.Item3;
-                ws1.Cell(r1, 3).Style.NumberFormat.Format = "#,##0";
-                ws1.Cell(r1, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws1.Cell(r1, 4).Value = item.Item4;
-                ws1.Cell(r1, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws1.Cell(r1, 5).Value = item.Item5;
+                l.TenLop,
+                l.DangKyHocs?.Count ?? 0,
+                l.DangKyHocs?.Count(d => d.TrangThai == TrangThaiDangKy.DaXacNhan) ?? 0,
+                (double)daXacNhan.Where(d => d.MaLop == l.MaLop).Sum(d => d.HocPhi)
+            }).ToList();
+            TaoSheet(wb, "TheoLop", "ĐĂNG KÝ VÀ HỌC PHÍ THEO LỚP HỌC",
+                new[] { "Lớp học", "Tổng đăng ký", "Đã xác nhận", "Học phí (đ)" }, dongLop, coTong: true);
 
-                for (int c = 1; c <= 5; c++)
-                {
-                    ws1.Cell(r1, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    ws1.Cell(r1, c).Style.Border.OutsideBorderColor = borderColor;
-                }
-            }
-
-            // Phần 2: Đăng ký học & Doanh thu
-            r1 += 2;
-            ws1.Cell(r1, 1).Value = "II. TÌNH HÌNH ĐĂNG KÝ HỌC & DOANH THU";
-            ws1.Cell(r1, 1).Style.Font.Bold = true;
-            ws1.Cell(r1, 1).Style.Font.FontSize = 11;
-            ws1.Cell(r1, 1).Style.Font.FontColor = unetiPrimaryColor;
-
-            r1++;
-            string[] headersDangKy = { "STT", "Chỉ tiêu", "Số lượng", "Tỷ lệ (%)", "Doanh thu (VNĐ)" };
-            for (int i = 0; i < headersDangKy.Length; i++)
+            // Sheet 4: Số đăng ký theo từng trạng thái
+            var dongTrangThai = TrangThaiDangKy.TatCa.Select(tt => new object[]
             {
-                var c = ws1.Cell(r1, i + 1);
-                c.Value = headersDangKy[i];
-                c.Style.Font.Bold = true;
-                c.Style.Fill.BackgroundColor = XLColor.FromArgb(220, 252, 231);
-                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                c.Style.Border.OutsideBorderColor = borderColor;
-            }
+                tt,
+                dsDangKy.Count(d => d.TrangThai == tt)
+            }).ToList();
+            TaoSheet(wb, "TheoTrangThai", "SỐ ĐĂNG KÝ THEO TRẠNG THÁI",
+                new[] { "Trạng thái", "Số đăng ký" }, dongTrangThai, coTong: true);
 
-            double pctXacNhan = tongLuotDangKy > 0 ? (double)dangKyDaXacNhan / tongLuotDangKy : 0;
-            double pctCho = tongLuotDangKy > 0 ? (double)dangKyChoXacNhan / tongLuotDangKy : 0;
-            double pctHuy = tongLuotDangKy > 0 ? (double)dangKyDaHuy / tongLuotDangKy : 0;
-
-            var dsChiTieuDangKy = new[]
-            {
-                ("1", "Tổng số lượt đăng ký", (double)tongLuotDangKy, 1.0, 0.0),
-                ("2", "Đăng ký đã xác nhận", (double)dangKyDaXacNhan, pctXacNhan, (double)tongHocPhiDaXacNhan),
-                ("3", "Đăng ký chờ xác nhận", (double)dangKyChoXacNhan, pctCho, 0.0),
-                ("4", "Đăng ký đã hủy", (double)dangKyDaHuy, pctHuy, 0.0)
-            };
-
-            foreach (var item in dsChiTieuDangKy)
-            {
-                r1++;
-                ws1.Cell(r1, 1).Value = item.Item1;
-                ws1.Cell(r1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws1.Cell(r1, 2).Value = item.Item2;
-                ws1.Cell(r1, 3).Value = item.Item3;
-                ws1.Cell(r1, 3).Style.NumberFormat.Format = "#,##0";
-                ws1.Cell(r1, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws1.Cell(r1, 4).Value = item.Item4;
-                ws1.Cell(r1, 4).Style.NumberFormat.Format = "0.0%";
-                ws1.Cell(r1, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws1.Cell(r1, 5).Value = item.Item5;
-                ws1.Cell(r1, 5).Style.NumberFormat.Format = "#,##0 \"đ\"";
-                ws1.Cell(r1, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-
-                if (item.Item1 == "2")
-                {
-                    ws1.Row(r1).Style.Font.Bold = true;
-                    ws1.Cell(r1, 5).Style.Font.FontColor = XLColor.FromArgb(22, 101, 52);
-                }
-
-                for (int c = 1; c <= 5; c++)
-                {
-                    ws1.Cell(r1, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    ws1.Cell(r1, c).Style.Border.OutsideBorderColor = borderColor;
-                }
-            }
-
-            ws1.Columns().AdjustToContents();
-
-            // ---------------------------------------------------------------------
-            // SHEET 2: THỐNG KÊ THEO KHÓA HỌC
-            // ---------------------------------------------------------------------
-            var ws2 = workbook.Worksheets.Add("KhoaHoc_DoanhThu");
-            ws2.ShowGridLines = true;
-
-            ws2.Range("A1:H1").Merge().Value = "BÁO CÁO THỐNG KÊ SỐ LỚP & DOANH THU THEO TỪNG KHÓA HỌC";
-            ws2.Cell("A1").Style.Font.Bold = true;
-            ws2.Cell("A1").Style.Font.FontSize = 13;
-            ws2.Cell("A1").Style.Font.FontColor = XLColor.White;
-            ws2.Cell("A1").Style.Fill.BackgroundColor = unetiPrimaryColor;
-            ws2.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws2.Row(1).Height = 26;
-
-            string[] headersKH = { "STT", "Mã khóa học", "Tên khóa học", "Ngoại ngữ", "Cấp độ", "Học phí quy định (VNĐ)", "Số lớp đã mở", "Doanh thu học phí (VNĐ)" };
-            for (int i = 0; i < headersKH.Length; i++)
-            {
-                var c = ws2.Cell(3, i + 1);
-                c.Value = headersKH[i];
-                c.Style.Font.Bold = true;
-                c.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
-                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                c.Style.Border.OutsideBorderColor = borderColor;
-            }
-
-            int r2 = 3;
-            int sttKH = 1;
-            decimal tongDoanhThuKH = 0;
-            int tongSoLopKH = 0;
-
-            foreach (var kh in dsKhoaHoc.OrderBy(k => k.TenKhoaHoc))
-            {
-                r2++;
-                int soLop = kh.LopHocs?.Count ?? 0;
-                tongSoLopKH += soLop;
-
-                decimal doanhThuKhoa = dsDangKy
-                    .Where(d => d.LopHoc != null && d.LopHoc.MaKhoaHoc == kh.MaKhoaHoc && d.TrangThai == TrangThaiDangKy.DaXacNhan)
-                    .Sum(d => d.HocPhi);
-                tongDoanhThuKH += doanhThuKhoa;
-
-                ws2.Cell(r2, 1).Value = sttKH++;
-                ws2.Cell(r2, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws2.Cell(r2, 2).Value = kh.MaKhoaHoc;
-                ws2.Cell(r2, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws2.Cell(r2, 3).Value = kh.TenKhoaHoc;
-                ws2.Cell(r2, 4).Value = kh.NgoaiNgu;
-                ws2.Cell(r2, 5).Value = kh.CapDo;
-                ws2.Cell(r2, 6).Value = (double)kh.HocPhi;
-                ws2.Cell(r2, 6).Style.NumberFormat.Format = "#,##0 \"đ\"";
-                ws2.Cell(r2, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws2.Cell(r2, 7).Value = soLop;
-                ws2.Cell(r2, 7).Style.NumberFormat.Format = "#,##0";
-                ws2.Cell(r2, 7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws2.Cell(r2, 8).Value = (double)doanhThuKhoa;
-                ws2.Cell(r2, 8).Style.NumberFormat.Format = "#,##0 \"đ\"";
-                ws2.Cell(r2, 8).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-
-                for (int c = 1; c <= 8; c++)
-                {
-                    ws2.Cell(r2, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    ws2.Cell(r2, c).Style.Border.OutsideBorderColor = borderColor;
-                }
-            }
-
-            // Dòng tổng cộng
-            r2++;
-            ws2.Cell(r2, 1).Value = "";
-            ws2.Range(r2, 1, r2, 6).Merge().Value = "TỔNG CỘNG";
-            ws2.Cell(r2, 1).Style.Font.Bold = true;
-            ws2.Cell(r2, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws2.Cell(r2, 7).Value = tongSoLopKH;
-            ws2.Cell(r2, 7).Style.Font.Bold = true;
-            ws2.Cell(r2, 7).Style.NumberFormat.Format = "#,##0";
-            ws2.Cell(r2, 7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-            ws2.Cell(r2, 8).Value = (double)tongDoanhThuKH;
-            ws2.Cell(r2, 8).Style.Font.Bold = true;
-            ws2.Cell(r2, 8).Style.Font.FontColor = XLColor.FromArgb(22, 101, 52);
-            ws2.Cell(r2, 8).Style.NumberFormat.Format = "#,##0 \"đ\"";
-            ws2.Cell(r2, 8).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-            for (int c = 1; c <= 8; c++)
-            {
-                ws2.Cell(r2, c).Style.Fill.BackgroundColor = XLColor.FromArgb(241, 245, 249);
-                ws2.Cell(r2, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                ws2.Cell(r2, c).Style.Border.OutsideBorderColor = borderColor;
-            }
-
-            ws2.Columns().AdjustToContents();
-
-            // ---------------------------------------------------------------------
-            // SHEET 3: THỐNG KÊ THEO LỚP HỌC
-            // ---------------------------------------------------------------------
-            var ws3 = workbook.Worksheets.Add("LopHoc_DangKy");
-            ws3.ShowGridLines = true;
-
-            ws3.Range("A1:M1").Merge().Value = "BÁO CÁO THỐNG KÊ TÌNH HÌNH TUYỂN SINH & HỌC PHÍ THEO LỚP HỌC";
-            ws3.Cell("A1").Style.Font.Bold = true;
-            ws3.Cell("A1").Style.Font.FontSize = 13;
-            ws3.Cell("A1").Style.Font.FontColor = XLColor.White;
-            ws3.Cell("A1").Style.Fill.BackgroundColor = unetiPrimaryColor;
-            ws3.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws3.Row(1).Height = 26;
-
-            string[] headersLop = { "STT", "Mã lớp", "Tên lớp", "Khóa học", "Giảng viên phụ trách", "Lịch học", "Phòng học", "Số lượng tối đa", "Tổng đăng ký", "Đã xác nhận", "Tỷ lệ lấp đầy (%)", "Trạng thái lớp", "Doanh thu (VNĐ)" };
-            for (int i = 0; i < headersLop.Length; i++)
-            {
-                var c = ws3.Cell(3, i + 1);
-                c.Value = headersLop[i];
-                c.Style.Font.Bold = true;
-                c.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
-                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                c.Style.Border.OutsideBorderColor = borderColor;
-            }
-
-            int r3 = 3;
-            int sttLop = 1;
-            decimal tongDoanhThuLop = 0;
-            int tongDangKyLop = 0;
-            int tongDaXacNhanLop = 0;
-
-            foreach (var lop in dsLopHoc.OrderBy(l => l.TenLop))
-            {
-                r3++;
-                int tongDk = lop.DangKyHocs?.Count ?? 0;
-                int xacNhan = lop.DangKyHocs?.Count(d => d.TrangThai == TrangThaiDangKy.DaXacNhan) ?? 0;
-                tongDangKyLop += tongDk;
-                tongDaXacNhanLop += xacNhan;
-
-                double tyLeLapDay = lop.SoLuongToiDa > 0 ? (double)xacNhan / lop.SoLuongToiDa : 0;
-                decimal doanhThuLop = lop.DangKyHocs?
-                    .Where(d => d.TrangThai == TrangThaiDangKy.DaXacNhan)
-                    .Sum(d => d.HocPhi) ?? 0;
-                tongDoanhThuLop += doanhThuLop;
-
-                ws3.Cell(r3, 1).Value = sttLop++;
-                ws3.Cell(r3, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws3.Cell(r3, 2).Value = lop.MaLop;
-                ws3.Cell(r3, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws3.Cell(r3, 3).Value = lop.TenLop;
-                ws3.Cell(r3, 4).Value = lop.KhoaHoc?.TenKhoaHoc ?? "";
-                ws3.Cell(r3, 5).Value = lop.GiangVien?.HoTen ?? "Chưa phân công";
-                ws3.Cell(r3, 6).Value = lop.LichHoc;
-                ws3.Cell(r3, 7).Value = lop.PhongHoc;
-                ws3.Cell(r3, 8).Value = lop.SoLuongToiDa;
-                ws3.Cell(r3, 8).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws3.Cell(r3, 9).Value = tongDk;
-                ws3.Cell(r3, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws3.Cell(r3, 10).Value = xacNhan;
-                ws3.Cell(r3, 10).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws3.Cell(r3, 11).Value = tyLeLapDay;
-                ws3.Cell(r3, 11).Style.NumberFormat.Format = "0.0%";
-                ws3.Cell(r3, 11).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws3.Cell(r3, 12).Value = lop.TrangThai;
-                ws3.Cell(r3, 12).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws3.Cell(r3, 13).Value = (double)doanhThuLop;
-                ws3.Cell(r3, 13).Style.NumberFormat.Format = "#,##0 \"đ\"";
-                ws3.Cell(r3, 13).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-
-                for (int c = 1; c <= 13; c++)
-                {
-                    ws3.Cell(r3, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    ws3.Cell(r3, c).Style.Border.OutsideBorderColor = borderColor;
-                }
-            }
-
-            // Dòng tổng cộng lớp
-            r3++;
-            ws3.Range(r3, 1, r3, 8).Merge().Value = "TỔNG CỘNG";
-            ws3.Cell(r3, 1).Style.Font.Bold = true;
-            ws3.Cell(r3, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws3.Cell(r3, 9).Value = tongDangKyLop;
-            ws3.Cell(r3, 9).Style.Font.Bold = true;
-            ws3.Cell(r3, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-            ws3.Cell(r3, 10).Value = tongDaXacNhanLop;
-            ws3.Cell(r3, 10).Style.Font.Bold = true;
-            ws3.Cell(r3, 10).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-            ws3.Cell(r3, 11).Value = "";
-            ws3.Cell(r3, 12).Value = "";
-            ws3.Cell(r3, 13).Value = (double)tongDoanhThuLop;
-            ws3.Cell(r3, 13).Style.Font.Bold = true;
-            ws3.Cell(r3, 13).Style.Font.FontColor = XLColor.FromArgb(22, 101, 52);
-            ws3.Cell(r3, 13).Style.NumberFormat.Format = "#,##0 \"đ\"";
-            ws3.Cell(r3, 13).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-            for (int c = 1; c <= 13; c++)
-            {
-                ws3.Cell(r3, c).Style.Fill.BackgroundColor = XLColor.FromArgb(241, 245, 249);
-                ws3.Cell(r3, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                ws3.Cell(r3, c).Style.Border.OutsideBorderColor = borderColor;
-            }
-
-            ws3.Columns().AdjustToContents();
-
-            // ---------------------------------------------------------------------
-            // SHEET 4: CƠ CẤU TRẠNG THÁI ĐĂNG KÝ
-            // ---------------------------------------------------------------------
-            var ws4 = workbook.Worksheets.Add("TrangThai_DangKy");
-            ws4.ShowGridLines = true;
-
-            ws4.Range("A1:D1").Merge().Value = "CƠ CẤU TRẠNG THÁI ĐĂNG KÝ HỌC";
-            ws4.Cell("A1").Style.Font.Bold = true;
-            ws4.Cell("A1").Style.Font.FontSize = 13;
-            ws4.Cell("A1").Style.Font.FontColor = XLColor.White;
-            ws4.Cell("A1").Style.Fill.BackgroundColor = unetiPrimaryColor;
-            ws4.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws4.Row(1).Height = 26;
-
-            string[] headersTT = { "STT", "Trạng thái đăng ký", "Số lượt đăng ký", "Tỷ lệ (%)" };
-            for (int i = 0; i < headersTT.Length; i++)
-            {
-                var c = ws4.Cell(3, i + 1);
-                c.Value = headersTT[i];
-                c.Style.Font.Bold = true;
-                c.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
-                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                c.Style.Border.OutsideBorderColor = borderColor;
-            }
-
-            var dsTT = new[]
-            {
-                ("1", TrangThaiDangKy.DaXacNhan, (double)dangKyDaXacNhan, pctXacNhan),
-                ("2", TrangThaiDangKy.ChoXacNhan, (double)dangKyChoXacNhan, pctCho),
-                ("3", TrangThaiDangKy.DaHuy, (double)dangKyDaHuy, pctHuy)
-            };
-
-            int r4 = 3;
-            foreach (var item in dsTT)
-            {
-                r4++;
-                ws4.Cell(r4, 1).Value = item.Item1;
-                ws4.Cell(r4, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws4.Cell(r4, 2).Value = item.Item2;
-                ws4.Cell(r4, 3).Value = item.Item3;
-                ws4.Cell(r4, 3).Style.NumberFormat.Format = "#,##0";
-                ws4.Cell(r4, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws4.Cell(r4, 4).Value = item.Item4;
-                ws4.Cell(r4, 4).Style.NumberFormat.Format = "0.0%";
-                ws4.Cell(r4, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-
-                for (int c = 1; c <= 4; c++)
-                {
-                    ws4.Cell(r4, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    ws4.Cell(r4, c).Style.Border.OutsideBorderColor = borderColor;
-                }
-            }
-
-            // Dòng tổng cộng trạng thái
-            r4++;
-            ws4.Cell(r4, 1).Value = "";
-            ws4.Cell(r4, 2).Value = "TỔNG CỘNG";
-            ws4.Cell(r4, 2).Style.Font.Bold = true;
-            ws4.Cell(r4, 3).Value = (double)tongLuotDangKy;
-            ws4.Cell(r4, 3).Style.Font.Bold = true;
-            ws4.Cell(r4, 3).Style.NumberFormat.Format = "#,##0";
-            ws4.Cell(r4, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-            ws4.Cell(r4, 4).Value = 1.0;
-            ws4.Cell(r4, 4).Style.Font.Bold = true;
-            ws4.Cell(r4, 4).Style.NumberFormat.Format = "0.0%";
-            ws4.Cell(r4, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-            for (int c = 1; c <= 4; c++)
-            {
-                ws4.Cell(r4, c).Style.Fill.BackgroundColor = XLColor.FromArgb(241, 245, 249);
-                ws4.Cell(r4, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                ws4.Cell(r4, c).Style.Border.OutsideBorderColor = borderColor;
-            }
-
-            ws4.Columns().AdjustToContents();
-
-            // ---------------------------------------------------------------------
-            // SHEET 5: DỮ LIỆU ĐĂNG KÝ HỌC CHI TIẾT
-            // ---------------------------------------------------------------------
-            var ws5 = workbook.Worksheets.Add("ChiTiet_DangKy");
-            ws5.ShowGridLines = true;
-
-            ws5.Range("A1:L1").Merge().Value = "DANH SÁCH CHI TIẾT TẤT CẢ LƯỢT ĐĂNG KÝ HỌC (ĐỐI SOÁT THỐNG KÊ)";
-            ws5.Cell("A1").Style.Font.Bold = true;
-            ws5.Cell("A1").Style.Font.FontSize = 13;
-            ws5.Cell("A1").Style.Font.FontColor = XLColor.White;
-            ws5.Cell("A1").Style.Fill.BackgroundColor = unetiPrimaryColor;
-            ws5.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws5.Row(1).Height = 26;
-
-            string[] headersCT = { "STT", "Mã ĐK", "Mã HV", "Họ và tên học viên", "Số điện thoại", "Email", "Mã lớp", "Tên lớp học", "Khóa học", "Ngày đăng ký", "Học phí (VNĐ)", "Trạng thái" };
-            for (int i = 0; i < headersCT.Length; i++)
-            {
-                var c = ws5.Cell(3, i + 1);
-                c.Value = headersCT[i];
-                c.Style.Font.Bold = true;
-                c.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
-                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                c.Style.Border.OutsideBorderColor = borderColor;
-            }
-
-            int r5 = 3;
-            int sttDK = 1;
-            foreach (var dk in dsDangKy)
-            {
-                r5++;
-                ws5.Cell(r5, 1).Value = sttDK++;
-                ws5.Cell(r5, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws5.Cell(r5, 2).Value = dk.MaDangKy;
-                ws5.Cell(r5, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws5.Cell(r5, 3).Value = dk.MaHocVien;
-                ws5.Cell(r5, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws5.Cell(r5, 4).Value = dk.HocVien?.HoTen ?? "";
-                ws5.Cell(r5, 5).Value = dk.HocVien?.SoDienThoai ?? "";
-                ws5.Cell(r5, 6).Value = dk.HocVien?.Email ?? "";
-                ws5.Cell(r5, 7).Value = dk.MaLop;
-                ws5.Cell(r5, 7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws5.Cell(r5, 8).Value = dk.LopHoc?.TenLop ?? "";
-                ws5.Cell(r5, 9).Value = dk.LopHoc?.KhoaHoc?.TenKhoaHoc ?? "";
-                ws5.Cell(r5, 10).Value = dk.NgayDangKy.ToString("dd/MM/yyyy");
-                ws5.Cell(r5, 10).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws5.Cell(r5, 11).Value = (double)dk.HocPhi;
-                ws5.Cell(r5, 11).Style.NumberFormat.Format = "#,##0 \"đ\"";
-                ws5.Cell(r5, 11).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws5.Cell(r5, 12).Value = dk.TrangThai;
-                ws5.Cell(r5, 12).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                for (int c = 1; c <= 12; c++)
-                {
-                    ws5.Cell(r5, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    ws5.Cell(r5, c).Style.Border.OutsideBorderColor = borderColor;
-                }
-            }
-
-            ws5.Columns().AdjustToContents();
-
-            // Lưu và trả về file Excel
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Position = 0;
-
-            var fileName = $"BaoCaoThongKe_UNETI_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            // Bước 3: trả file về cho người dùng tải
+            using var ms = new MemoryStream();
+            wb.SaveAs(ms);
+            return File(ms.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"BaoCaoThongKe_{DateTime.Now:yyyyMMdd_HHmm}.xlsx");
         }
 
-        // =========================================================================
-        // CHỨC NĂNG 2: TẢI BIỂU MẪU EXCEL CHUẨN ĐỂ NHẬP DỮ LIỆU
-        // =========================================================================
-        public async Task<IActionResult> DownloadTemplate()
+        // Hàm phụ: tạo 1 sheet đẹp gồm banner tiêu đề, dòng thời gian, bảng có viền, dòng tổng cộng
+        // - tieuDeSheet = null: không có banner, tiêu đề cột nằm ở dòng 1 (dùng cho file mẫu để nhập)
+        // - coTong = true: thêm dòng "TỔNG CỘNG" cộng các cột số
+        private static void TaoSheet(XLWorkbook wb, string tenSheet, string? tieuDeSheet,
+            string[] tieuDe, List<object[]> dong, bool coTong = false)
         {
-            var dsLop = await _context.LopHocs
-                .Include(l => l.KhoaHoc)
-                .OrderBy(l => l.TenLop)
-                .ToListAsync();
+            var ws = wb.Worksheets.Add(tenSheet);
+            int soCot = tieuDe.Length;
+            int dongTieuDe = 1; // dòng chứa tiêu đề cột
+            var xanhDam = XLColor.FromArgb(30, 58, 138);
+            var xanhNhat = XLColor.FromArgb(2, 132, 199);
+            var xam = XLColor.FromArgb(241, 245, 249);
 
-            using var workbook = new XLWorkbook();
-            var unetiPrimaryColor = XLColor.FromArgb(30, 58, 138);
-            var borderColor = XLColor.FromArgb(203, 213, 225);
-
-            // Sheet 1: Mẫu nhập dữ liệu
-            var ws1 = workbook.Worksheets.Add("NhapDangKyHoc");
-            ws1.ShowGridLines = true;
-
-            // Hướng dẫn
-            ws1.Range("A1:J1").Merge().Value = "BIỂU MẪU NHẬP DỮ LIỆU ĐĂNG KÝ HỌC VIÊN & CẬP NHẬT BÁO CÁO THỐNG KÊ (Dấu * là bắt buộc)";
-            ws1.Cell("A1").Style.Font.Bold = true;
-            ws1.Cell("A1").Style.Font.FontSize = 12;
-            ws1.Cell("A1").Style.Font.FontColor = XLColor.White;
-            ws1.Cell("A1").Style.Fill.BackgroundColor = unetiPrimaryColor;
-            ws1.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws1.Row(1).Height = 25;
-
-            string[] headers =
+            // 1. Banner tiêu đề báo cáo (dòng 1) và thời gian xuất (dòng 2)
+            if (tieuDeSheet != null)
             {
-                "Họ và tên (*)",
-                "Số điện thoại (*)",
-                "Email (*)",
-                "Ngày sinh (dd/MM/yyyy)",
-                "Giới tính (Nam/Nữ)",
-                "Địa chỉ",
-                "Tên lớp hoặc Mã lớp (*)",
-                "Ngày đăng ký (dd/MM/yyyy)",
-                "Học phí (VNĐ)",
-                "Trạng thái (Đã xác nhận/Chờ xác nhận)"
-            };
+                ws.Range(1, 1, 1, soCot).Merge().Value = tieuDeSheet;
+                var banner = ws.Range(1, 1, 1, soCot);
+                banner.Style.Font.Bold = true;
+                banner.Style.Font.FontSize = 14;
+                banner.Style.Font.FontColor = XLColor.White;
+                banner.Style.Fill.BackgroundColor = xanhDam;
+                banner.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Row(1).Height = 28;
 
-            for (int i = 0; i < headers.Length; i++)
-            {
-                var c = ws1.Cell(2, i + 1);
-                c.Value = headers[i];
-                c.Style.Font.Bold = true;
-                c.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
-                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                c.Style.Border.OutsideBorderColor = borderColor;
+                ws.Range(2, 1, 2, soCot).Merge().Value = $"Xuất lúc: {DateTime.Now:dd/MM/yyyy HH:mm}";
+                ws.Range(2, 1, 2, soCot).Style.Font.Italic = true;
+                ws.Range(2, 1, 2, soCot).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                dongTieuDe = 4; // chừa dòng 3 trống
             }
 
-            // Dòng dữ liệu mẫu để người dùng dễ hiểu
-            var firstClass = dsLop.FirstOrDefault();
-            var sampleClass = firstClass?.TenLop ?? "Tiếng Anh Giao Tiếp A1 - K01";
-            var sampleFee = (double)(firstClass?.HocPhi ?? 2500000m);
-            var sampleDate = DateTime.Now.ToString("dd/MM/yyyy");
+            // 2. Tiêu đề cột: chữ trắng, nền xanh, căn giữa
+            for (int i = 0; i < soCot; i++)
+                ws.Cell(dongTieuDe, i + 1).Value = tieuDe[i];
+            var hang = ws.Range(dongTieuDe, 1, dongTieuDe, soCot);
+            hang.Style.Font.Bold = true;
+            hang.Style.Font.FontColor = XLColor.White;
+            hang.Style.Fill.BackgroundColor = xanhNhat;
+            hang.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            var sampleRows = new[]
+            // 3. Dữ liệu: số hiển thị dạng 1,000,000, dòng chẵn tô màu xám nhạt cho dễ nhìn
+            int cuoi = dongTieuDe + dong.Count; // dòng dữ liệu cuối cùng
+            if (dong.Count > 0)
             {
-                new object[] { "Nguyễn Văn An", "0912345678", "nguyenvanan@gmail.com", "15/05/2002", "Nam", "Hà Nội", sampleClass, sampleDate, sampleFee, "Đã xác nhận" },
-                new object[] { "Trần Thị Mai", "0987654321", "tranmai@gmail.com", "20/08/2003", "Nữ", "Hà Nam", sampleClass, sampleDate, sampleFee, "Đã xác nhận" },
-                new object[] { "Lê Hoàng Long", "0905123456", "hoanglong@gmail.com", "10/12/2001", "Nam", "Nam Định", firstClass != null ? firstClass.MaLop.ToString() : "1", sampleDate, sampleFee, "Chờ xác nhận" }
-            };
-
-            int r = 2;
-            foreach (var row in sampleRows)
-            {
-                r++;
-                for (int c = 0; c < row.Length; c++)
-                {
-                    var cell = ws1.Cell(r, c + 1);
-                    if (row[c] is double d)
-                    {
-                        cell.Value = d;
-                        cell.Style.NumberFormat.Format = "#,##0";
-                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                    }
-                    else
-                    {
-                        cell.Value = row[c].ToString();
-                    }
-
-                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    cell.Style.Border.OutsideBorderColor = borderColor;
-                }
+                ws.Cell(dongTieuDe + 1, 1).InsertData(dong);
+                ws.Range(dongTieuDe + 1, 1, cuoi, soCot).Style.NumberFormat.Format = "#,##0";
+                for (int r = dongTieuDe + 2; r <= cuoi; r += 2)
+                    ws.Range(r, 1, r, soCot).Style.Fill.BackgroundColor = xam;
             }
 
-            ws1.Columns().AdjustToContents();
-
-            // Sheet 2: Danh sách lớp học hiện có để tham khảo
-            var ws2 = workbook.Worksheets.Add("DanhSachLopHocHienCo");
-            ws2.ShowGridLines = true;
-
-            ws2.Range("A1:G1").Merge().Value = "DANH SÁCH LỚP HỌC HIỆN CÓ ĐỂ ĐIỀN VÀO CỘT 'TÊN LỚP HOẶC MÃ LỚP'";
-            ws2.Cell("A1").Style.Font.Bold = true;
-            ws2.Cell("A1").Style.Font.FontSize = 12;
-            ws2.Cell("A1").Style.Font.FontColor = XLColor.White;
-            ws2.Cell("A1").Style.Fill.BackgroundColor = XLColor.FromArgb(2, 132, 199);
-            ws2.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws2.Row(1).Height = 25;
-
-            string[] headersLop = { "Mã lớp", "Tên lớp học", "Khóa học", "Học phí quy định (VNĐ)", "Lịch học", "Phòng học", "Trạng thái tuyển sinh" };
-            for (int i = 0; i < headersLop.Length; i++)
+            // 4. Dòng tổng cộng: cộng các cột có dữ liệu là số
+            if (coTong && dong.Count > 0)
             {
-                var c = ws2.Cell(2, i + 1);
-                c.Value = headersLop[i];
-                c.Style.Font.Bold = true;
-                c.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
-                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                c.Style.Border.OutsideBorderColor = borderColor;
+                cuoi++;
+                ws.Cell(cuoi, 1).Value = "TỔNG CỘNG";
+                for (int c = 1; c < soCot; c++)
+                    if (dong[0][c] is not string)
+                        ws.Cell(cuoi, c + 1).Value = dong.Sum(d => Convert.ToDouble(d[c]));
+                var tong = ws.Range(cuoi, 1, cuoi, soCot);
+                tong.Style.Font.Bold = true;
+                tong.Style.Fill.BackgroundColor = XLColor.FromArgb(224, 231, 255);
             }
 
-            int r2 = 2;
-            foreach (var lop in dsLop)
+            // 5. Kẻ viền toàn bộ bảng, cố định dòng tiêu đề khi cuộn
+            var bang = ws.Range(dongTieuDe, 1, cuoi, soCot);
+            bang.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            bang.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            bang.Style.Border.OutsideBorderColor = XLColor.FromArgb(203, 213, 225);
+            bang.Style.Border.InsideBorderColor = XLColor.FromArgb(203, 213, 225);
+            ws.SheetView.FreezeRows(dongTieuDe);
+
+            // 6. Giãn cột vừa nội dung (chỉ tính phần bảng), cộng thêm lề cho thoáng
+            for (int c = 1; c <= soCot; c++)
             {
-                r2++;
-                ws2.Cell(r2, 1).Value = lop.MaLop;
-                ws2.Cell(r2, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws2.Cell(r2, 2).Value = lop.TenLop;
-                ws2.Cell(r2, 3).Value = lop.KhoaHoc?.TenKhoaHoc ?? "";
-                ws2.Cell(r2, 4).Value = (double)lop.HocPhi;
-                ws2.Cell(r2, 4).Style.NumberFormat.Format = "#,##0 \"đ\"";
-                ws2.Cell(r2, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                ws2.Cell(r2, 5).Value = lop.LichHoc;
-                ws2.Cell(r2, 6).Value = lop.PhongHoc;
-                ws2.Cell(r2, 7).Value = lop.TrangThai;
-                ws2.Cell(r2, 7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                for (int c = 1; c <= 7; c++)
-                {
-                    ws2.Cell(r2, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    ws2.Cell(r2, c).Style.Border.OutsideBorderColor = borderColor;
-                }
+                ws.Column(c).AdjustToContents(dongTieuDe, cuoi);
+                ws.Column(c).Width = Math.Max(ws.Column(c).Width + 3, 20);
             }
-
-            ws2.Columns().AdjustToContents();
-
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Position = 0;
-
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Mau_Nhap_DuLieu_ThongKe_UNETI.xlsx");
         }
 
         // =========================================================================
-        // CHỨC NĂNG 3: NHẬP DỮ LIỆU TỪ EXCEL VÀ CẬP NHẬT BÁO CÁO THỐNG KÊ
+        // [MỚI] 2a. TẢI FILE EXCEL MẪU ĐỂ NHẬP ĐĂNG KÝ HỌC
         // =========================================================================
+        // GET: /ThongKe/DownloadTemplate
+        public IActionResult DownloadTemplate()
+        {
+            using var wb = new XLWorkbook();
+
+            // Sheet nhập liệu: dòng 1 là tiêu đề, người dùng điền dữ liệu từ dòng 2
+            TaoSheet(wb, "DangKyHoc", null,
+                new[] { "MaHocVien", "MaLop", "NgayDangKy", "HocPhi", "TrangThai" },
+                new List<object[]>());
+
+            // Sheet hướng dẫn cách điền
+            var hd = wb.Worksheets.Add("HuongDan");
+            hd.Cell(1, 1).Value = "Mỗi dòng ở sheet DangKyHoc là một lượt đăng ký, điền từ dòng 2.";
+            hd.Cell(2, 1).Value = "MaHocVien, MaLop: mã đã có trong hệ thống (bắt buộc). Học viên chưa có sẽ bị bỏ qua.";
+            hd.Cell(3, 1).Value = "NgayDangKy: dạng dd/MM/yyyy. Để trống = hôm nay.";
+            hd.Cell(4, 1).Value = "HocPhi: để trống = học phí của lớp.";
+            hd.Cell(5, 1).Value = "TrangThai: Chờ xác nhận / Đã xác nhận / Đã hủy. Để trống = Chờ xác nhận.";
+            hd.Column(1).AdjustToContents();
+
+            using var ms = new MemoryStream();
+            wb.SaveAs(ms);
+            return File(ms.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "MauNhapDangKy.xlsx");
+        }
+
+        // =========================================================================
+        // [MỚI] 2b. NHẬP HÀNG LOẠT TỪ FILE EXCEL VÀO SQL SERVER
+        // =========================================================================
+        // POST: /ThongKe/ImportExcel
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ImportExcel(IFormFile? fileExcel)
         {
-            if (fileExcel == null || fileExcel.Length == 0)
+            // Bước 1: kiểm tra đã chọn file .xlsx chưa
+            if (fileExcel == null || fileExcel.Length == 0
+                || Path.GetExtension(fileExcel.FileName).ToLower() != ".xlsx")
             {
-                TempData["Loi"] = "Vui lòng chọn một file Excel (.xlsx hoặc .xls) để nhập dữ liệu.";
+                TempData["Loi"] = "Vui lòng chọn file Excel (.xlsx).";
                 return RedirectToAction(nameof(Index));
             }
 
-            var extension = Path.GetExtension(fileExcel.FileName).ToLower();
-            if (extension != ".xlsx" && extension != ".xls")
-            {
-                TempData["Loi"] = "Định dạng file không hợp lệ! Vui lòng chỉ tải lên file Excel có phần mở rộng .xlsx hoặc .xls.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var result = new ImportThongKeResult();
+            var kq = new ImportThongKeResult(); // lưu kết quả nhập để hiển thị lại
 
             try
             {
-                using var stream = fileExcel.OpenReadStream();
-                using var workbook = new XLWorkbook(stream);
+                // Bước 2: mở file, đọc sheet đầu tiên
+                using var wb = new XLWorkbook(fileExcel.OpenReadStream());
+                var ws = wb.Worksheets.First();
+                int dongCuoi = ws.LastRowUsed()?.RowNumber() ?? 1;
 
-                // Ưu tiên sheet có tên NhapDangKyHoc hoặc sheet đầu tiên
-                var ws = workbook.Worksheets.FirstOrDefault(w => w.Name.Contains("Nhap") || w.Name.Contains("DangKy"))
-                         ?? workbook.Worksheets.FirstOrDefault();
-
-                if (ws == null)
+                // Bước 3: đọc từng dòng dữ liệu (bỏ dòng 1 là tiêu đề)
+                for (int dong = 2; dong <= dongCuoi; dong++)
                 {
-                    TempData["Loi"] = "File Excel không chứa bất kỳ trang tính (Worksheet) nào.";
-                    return RedirectToAction(nameof(Index));
-                }
+                    if (ws.Row(dong).IsEmpty()) continue; // bỏ qua dòng trống
 
-                // Xác định dòng tiêu đề (quét 5 dòng đầu)
-                int headerRow = 1;
-                for (int r = 1; r <= Math.Min(5, ws.LastRowUsed()?.RowNumber() ?? 1); r++)
-                {
-                    var textRow = ws.Row(r).Cells().Select(c => c.GetString().ToLower()).ToList();
-                    if (textRow.Any(t => t.Contains("họ") || t.Contains("hoten") || t.Contains("tên") || t.Contains("lớp") || t.Contains("lop")))
+                    kq.TongSoDong++;
+                    string? loi = await ThemMotDangKy(ws, dong);
+
+                    if (loi == null)
                     {
-                        headerRow = r;
-                        break;
-                    }
-                }
-
-                int lastRow = ws.LastRowUsed()?.RowNumber() ?? headerRow;
-                int startRow = headerRow + 1;
-
-                if (startRow > lastRow)
-                {
-                    TempData["Loi"] = "File Excel không chứa dòng dữ liệu nào sau tiêu đề.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Cache danh sách lớp học và tài khoản
-                var dsLop = await _context.LopHocs
-                    .Include(l => l.KhoaHoc)
-                    .ToListAsync();
-
-                for (int row = startRow; row <= lastRow; row++)
-                {
-                    var r = ws.Row(row);
-                    // Bỏ qua dòng hoàn toàn trống
-                    if (r.IsEmpty() || r.Cells().All(c => string.IsNullOrWhiteSpace(c.GetString())))
-                    {
-                        continue;
-                    }
-
-                    result.TongSoDong++;
-
-                    // Đọc từng cột theo thứ tự chuẩn
-                    string hoTen = ws.Cell(row, 1).GetString().Trim();
-                    string soDienThoai = ws.Cell(row, 2).GetString().Trim();
-                    string email = ws.Cell(row, 3).GetString().Trim();
-                    string strNgaySinh = ws.Cell(row, 4).GetString().Trim();
-                    string gioiTinh = ws.Cell(row, 5).GetString().Trim();
-                    string diaChi = ws.Cell(row, 6).GetString().Trim();
-                    string lopInput = ws.Cell(row, 7).GetString().Trim();
-                    string strNgayDangKy = ws.Cell(row, 8).GetString().Trim();
-                    string strHocPhi = ws.Cell(row, 9).GetString().Trim();
-                    string trangThaiInput = ws.Cell(row, 10).GetString().Trim();
-
-                    // Kiểm tra Họ tên
-                    if (string.IsNullOrWhiteSpace(hoTen))
-                    {
-                        result.SoLoi++;
-                        result.DanhSachLoi.Add($"Dòng {row}: Họ và tên học viên không được để trống.");
-                        continue;
-                    }
-
-                    // Kiểm tra Lớp học
-                    if (string.IsNullOrWhiteSpace(lopInput))
-                    {
-                        result.SoLoi++;
-                        result.DanhSachLoi.Add($"Dòng {row}: Cột lớp học không được để trống.");
-                        continue;
-                    }
-
-                    // Tìm lớp học theo Mã lớp hoặc Tên lớp
-                    LopHoc? lop = null;
-                    if (int.TryParse(lopInput, out int maLopTim))
-                    {
-                        lop = dsLop.FirstOrDefault(l => l.MaLop == maLopTim);
-                    }
-                    if (lop == null)
-                    {
-                        lop = dsLop.FirstOrDefault(l => l.TenLop.Trim().Equals(lopInput, StringComparison.OrdinalIgnoreCase))
-                           ?? dsLop.FirstOrDefault(l => l.TenLop.Contains(lopInput, StringComparison.OrdinalIgnoreCase));
-                    }
-
-                    if (lop == null)
-                    {
-                        result.SoLoi++;
-                        result.DanhSachLoi.Add($"Dòng {row}: Không tìm thấy lớp học '{lopInput}' trong cơ sở dữ liệu.");
-                        continue;
-                    }
-
-                    // Xử lý Số điện thoại và Email mặc định nếu thiếu
-                    if (string.IsNullOrWhiteSpace(soDienThoai))
-                    {
-                        soDienThoai = "09" + Random.Shared.Next(10000000, 99999999);
-                    }
-                    if (string.IsNullOrWhiteSpace(email))
-                    {
-                        var cleanName = Regex.Replace(hoTen.ToLower(), @"\s+", "");
-                        email = $"{cleanName}{Random.Shared.Next(100, 999)}@uneti.edu.vn";
-                    }
-
-                    // Parse Ngày sinh
-                    DateTime ngaySinh = DateTime.Today.AddYears(-20);
-                    if (!string.IsNullOrWhiteSpace(strNgaySinh))
-                    {
-                        if (ws.Cell(row, 4).TryGetValue(out DateTime dtSinh))
-                        {
-                            ngaySinh = dtSinh;
-                        }
-                        else if (DateTime.TryParse(strNgaySinh, out DateTime parsedSinh))
-                        {
-                            ngaySinh = parsedSinh;
-                        }
-                    }
-
-                    // Giới tính
-                    if (string.IsNullOrWhiteSpace(gioiTinh))
-                    {
-                        gioiTinh = "Nam";
-                    }
-
-                    // Parse Ngày đăng ký
-                    DateTime ngayDangKy = DateTime.Now;
-                    if (!string.IsNullOrWhiteSpace(strNgayDangKy))
-                    {
-                        if (ws.Cell(row, 8).TryGetValue(out DateTime dtDk))
-                        {
-                            ngayDangKy = dtDk;
-                        }
-                        else if (DateTime.TryParse(strNgayDangKy, out DateTime parsedDk))
-                        {
-                            ngayDangKy = parsedDk;
-                        }
-                    }
-
-                    // Parse Học phí
-                    decimal hocPhi = lop.HocPhi;
-                    if (!string.IsNullOrWhiteSpace(strHocPhi))
-                    {
-                        if (ws.Cell(row, 9).TryGetValue(out decimal decHp) && decHp > 0)
-                        {
-                            hocPhi = decHp;
-                        }
-                        else
-                        {
-                            string cleanHp = Regex.Replace(strHocPhi, @"[^\d\.]", "");
-                            if (decimal.TryParse(cleanHp, out decimal parsedHp) && parsedHp > 0)
-                            {
-                                hocPhi = parsedHp;
-                            }
-                        }
-                    }
-
-                    // Parse Trạng thái
-                    string trangThai = TrangThaiDangKy.DaXacNhan; // Mặc định cho dữ liệu nhập báo cáo
-                    if (!string.IsNullOrWhiteSpace(trangThaiInput))
-                    {
-                        string lowerTt = trangThaiInput.ToLower();
-                        if (lowerTt.Contains("chờ") || lowerTt.Contains("cho"))
-                            trangThai = TrangThaiDangKy.ChoXacNhan;
-                        else if (lowerTt.Contains("hủy") || lowerTt.Contains("huy"))
-                            trangThai = TrangThaiDangKy.DaHuy;
-                        else
-                            trangThai = TrangThaiDangKy.DaXacNhan;
-                    }
-
-                    // Tìm hoặc tạo mới Học viên
-                    var hocVien = await _context.HocViens
-                        .Include(h => h.TaiKhoan)
-                        .FirstOrDefaultAsync(h => h.Email == email || h.SoDienThoai == soDienThoai);
-
-                    if (hocVien == null)
-                    {
-                        // Tạo tài khoản cho học viên
-                        string baseUser = email.Contains('@') ? email.Split('@')[0] : ("hv" + soDienThoai);
-                        baseUser = Regex.Replace(baseUser.ToLower(), @"[^a-z0-9]", "");
-                        if (baseUser.Length < 3) baseUser += "user";
-
-                        string tenDangNhap = baseUser;
-                        int suffix = 1;
-                        while (await _context.TaiKhoans.AnyAsync(t => t.TenDangNhap == tenDangNhap))
-                        {
-                            tenDangNhap = $"{baseUser}{suffix++}";
-                        }
-
-                        var tk = new TaiKhoan
-                        {
-                            TenDangNhap = tenDangNhap,
-                            MatKhau = "123456",
-                            HoTen = hoTen,
-                            Email = email,
-                            VaiTro = "HocVien",
-                            TrangThai = true
-                        };
-                        _context.TaiKhoans.Add(tk);
-                        await _context.SaveChangesAsync();
-
-                        hocVien = new HocVien
-                        {
-                            MaTaiKhoan = tk.MaTaiKhoan,
-                            HoTen = hoTen,
-                            SoDienThoai = soDienThoai,
-                            Email = email,
-                            GioiTinh = gioiTinh,
-                            NgaySinh = ngaySinh,
-                            DiaChi = diaChi
-                        };
-                        _context.HocViens.Add(hocVien);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    // Kiểm tra đăng ký học lớp này
-                    var dangKy = await _context.DangKyHocs
-                        .FirstOrDefaultAsync(d => d.MaHocVien == hocVien.MaHocVien && d.MaLop == lop.MaLop);
-
-                    if (dangKy != null)
-                    {
-                        // Đã có bản ghi -> cập nhật trạng thái và học phí
-                        dangKy.TrangThai = trangThai;
-                        dangKy.HocPhi = hocPhi;
-                        dangKy.NgayDangKy = ngayDangKy;
-                        result.SoThanhCong++;
-                        result.ChiTietThanhCong.Add($"Dòng {row}: Cập nhật đăng ký lớp '{lop.TenLop}' cho học viên '{hoTen}'.");
+                        kq.SoThanhCong++;
                     }
                     else
                     {
-                        // Thêm mới đăng ký
-                        var dangKyMoi = new DangKyHoc
-                        {
-                            MaHocVien = hocVien.MaHocVien,
-                            MaLop = lop.MaLop,
-                            NgayDangKy = ngayDangKy,
-                            HocPhi = hocPhi,
-                            TrangThai = trangThai
-                        };
-                        _context.DangKyHocs.Add(dangKyMoi);
-                        result.SoThanhCong++;
-                        result.ChiTietThanhCong.Add($"Dòng {row}: Thêm mới đăng ký lớp '{lop.TenLop}' cho học viên '{hoTen}'.");
+                        kq.SoLoi++;
+                        kq.DanhSachLoi.Add($"Dòng {dong}: {loi}");
                     }
-
-                    await _context.SaveChangesAsync();
-                }
-
-                // Lưu kết quả vào TempData
-                TempData["ImportResultJson"] = JsonSerializer.Serialize(result);
-
-                if (result.SoThanhCong > 0)
-                {
-                    TempData["ThanhCong"] = $"Nhập Excel thành công: Đã ghi nhận / cập nhật {result.SoThanhCong} lượt đăng ký vào hệ thống!";
-                }
-                if (result.SoLoi > 0)
-                {
-                    TempData["Loi"] = $"Quá trình nhập có {result.SoLoi} dòng bị lỗi. Vui lòng kiểm tra chi tiết danh sách bên dưới.";
                 }
             }
             catch (Exception ex)
             {
-                TempData["Loi"] = $"Đã xảy ra lỗi khi đọc file Excel: {ex.Message}";
+                TempData["Loi"] = "Không đọc được file Excel: " + ex.Message;
+                return RedirectToAction(nameof(Index));
             }
 
+            // Bước 4: báo kết quả (chỉ giữ 10 lỗi đầu để TempData không quá nặng)
+            kq.DanhSachLoi = kq.DanhSachLoi.Take(10).ToList();
+            TempData["ImportResultJson"] = JsonSerializer.Serialize(kq);
+
+            if (kq.SoThanhCong > 0)
+                TempData["ThanhCong"] = $"Đã nhập thành công {kq.SoThanhCong} đăng ký.";
+            if (kq.SoLoi > 0)
+                TempData["Loi"] = $"Có {kq.SoLoi} dòng bị bỏ qua, xem chi tiết bên dưới.";
+
             return RedirectToAction(nameof(Index));
+        }
+
+        // Hàm phụ: đọc 1 dòng Excel, kiểm tra rồi thêm 1 đăng ký.
+        // Trả về null nếu thành công, hoặc nội dung lỗi nếu dòng đó không hợp lệ.
+        private async Task<string?> ThemMotDangKy(IXLWorksheet ws, int dong)
+        {
+            // Cột 1, 2: mã học viên và mã lớp phải là số
+            if (!int.TryParse(ws.Cell(dong, 1).GetString().Trim(), out int maHocVien)
+                || !int.TryParse(ws.Cell(dong, 2).GetString().Trim(), out int maLop))
+                return "MaHocVien và MaLop phải là số.";
+
+            // Học viên chưa có trong hệ thống thì bỏ qua dòng này
+            if (!await _context.HocViens.AnyAsync(h => h.MaHocVien == maHocVien))
+                return $"Không có học viên mã {maHocVien}.";
+
+            var lop = await _context.LopHocs.FindAsync(maLop);
+            if (lop == null)
+                return $"Không có lớp mã {maLop}.";
+
+            // Không cho đăng ký trùng (cùng học viên, cùng lớp)
+            if (await _context.DangKyHocs.AnyAsync(d => d.MaHocVien == maHocVien && d.MaLop == maLop))
+                return "Học viên đã đăng ký lớp này rồi.";
+
+            // Cột 3: ngày đăng ký (để trống thì lấy hôm nay)
+            DateTime ngayDangKy = DateTime.Today;
+            var oNgay = ws.Cell(dong, 3);
+            if (!oNgay.IsEmpty() && !oNgay.TryGetValue(out ngayDangKy)
+                && !DateTime.TryParse(oNgay.GetString(), out ngayDangKy))
+                return "Ngày đăng ký không hợp lệ.";
+
+            // Cột 4: học phí (để trống thì lấy học phí của lớp)
+            decimal hocPhi = lop.HocPhi;
+            var oHocPhi = ws.Cell(dong, 4);
+            if (!oHocPhi.IsEmpty() && !oHocPhi.TryGetValue(out hocPhi))
+                return "Học phí không hợp lệ.";
+
+            // Cột 5: trạng thái (để trống thì là "Chờ xác nhận")
+            string trangThai = ws.Cell(dong, 5).GetString().Trim();
+            if (trangThai == "") trangThai = TrangThaiDangKy.ChoXacNhan;
+            if (!TrangThaiDangKy.TatCa.Contains(trangThai))
+                return $"Trạng thái \"{trangThai}\" không hợp lệ.";
+
+            // Dữ liệu hợp lệ -> thêm vào database
+            _context.DangKyHocs.Add(new DangKyHoc
+            {
+                MaHocVien = maHocVien,
+                MaLop = maLop,
+                NgayDangKy = ngayDangKy,
+                HocPhi = hocPhi,
+                TrangThai = trangThai
+            });
+            await _context.SaveChangesAsync();
+            return null;
         }
     }
 }

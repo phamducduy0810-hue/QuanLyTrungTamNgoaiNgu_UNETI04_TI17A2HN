@@ -58,26 +58,39 @@
     </div>
 
     <!-- BẢNG DANH SÁCH HỌC VIÊN -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">
-                <i class="bi bi-person-lines-fill me-2"></i>DANH SÁCH HỌC VIÊN CHÍNH THỨC
-            </h5>
-            <span class="badge bg-success px-3 py-2">@(danhSachDangKy?.Count ?? 0) học viên đã đăng ký</span>
+    <div class="card shadow border-0 rounded-4 overflow-hidden mb-5" style="box-shadow: 0 8px 24px rgba(30, 58, 138, 0.15) !important;">
+        <div class="card-header p-4 text-white border-0 d-flex justify-content-between align-items-center flex-wrap gap-2"
+             style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%);">
+            <div>
+                <span class="badge px-3 py-1 mb-2 fw-bold text-uppercase shadow-sm" 
+                      style="background: #f59e0b; color: #0f172a; font-size: 0.75rem; letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-users me-1"></i> Danh sách học viên
+                </span>
+                <h4 class="fw-bold mb-1 text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-user-graduate me-2 text-warning"></i>HỌC VIÊN CHÍNH THỨC - LỚP @Model.TenLop
+                </h4>
+                <p class="mb-0 text-white-50" style="font-size: 0.9rem;">
+                    Danh sách học viên đã đăng ký và xác nhận tham gia lớp học
+                </p>
+            </div>
+            <span class="badge px-3 py-2 rounded-pill fw-bold border" 
+                  style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border-color: #34d399 !important; font-size: 0.85rem;">
+                <i class="fa-solid fa-user-check me-1"></i> @(danhSachDangKy?.Count ?? 0) học viên đã đăng ký
+            </span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-striped mb-0 align-middle">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th class="text-center" style="width: 60px;">STT</th>
-                            <th class="text-center" style="width: 80px;">Mã HV</th>
-                            <th>Họ và Tên</th>
-                            <th class="text-center">Giới tính</th>
-                            <th>Ngày sinh</th>
-                            <th>Số điện thoại</th>
-                            <th>Email</th>
-                            <th class="text-center">Ngày đăng ký</th>
+                    <thead style="background: #f1f5f9; color: #1e293b; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                        <tr class="border-bottom">
+                            <th class="text-center py-3" style="width: 60px;">STT</th>
+                            <th class="text-center py-3" style="width: 80px;">Mã HV</th>
+                            <th class="py-3">Họ và Tên</th>
+                            <th class="text-center py-3">Giới tính</th>
+                            <th class="py-3">Ngày sinh</th>
+                            <th class="py-3">Số điện thoại</th>
+                            <th class="py-3">Email</th>
+                            <th class="text-center py-3">Ngày đăng ký</th>
                         </tr>
                     </thead>
                     <tbody>
